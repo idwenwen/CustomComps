@@ -1,34 +1,47 @@
 <template>
   <div style="width:200px;">
-    <basic-format :name="name" :content="content" :break-line="2"></basic-format>
-    <basic-format :name="name2" :content="content2">
-      <template v-slot:view="content">
-        <el-popover
-          placement="bottom"
-          title="testing"
-          width="100"
-          trigger="click"
-          content="testing">
-          <span slot="reference">view</span>
-        </el-popover>
-      </template>
-    </basic-format>
+    <data-form :content="content"/>
+    <table-temp :tableattr="table" @linking-click="clickLinking"/>
   </div>
 </template>
 
 <script>
-import basicFormat from '@c/FormComponent/DataFormat/basicFormat'
+import dataForm from '@c/FormComponent/DataFormat'
+import tableTemp from '@c/FormComponent/TablePagination/TableTemplate'
 export default {
   name: 'MainField',
   components: {
-    basicFormat
+    dataForm,
+    tableTemp
   },
-  data () {
+  data() {
     return {
-      name: 'host',
-      content: 'hosting testing string must be as longest as possible',
-      name2: 'author',
-      content2: '1'
+      content: {
+        content: [{ name: [1, 2, 3, 4], content: ['h', 'e', 'l', 'o'] },
+          { name: 'host', content: 'hello you there,this is a long distance', breakLine: 2 },
+          { name: 'guest', content: 'check this' }],
+        title: 'checkout'
+      },
+      table: {
+        columns: [
+          { type: 'index' },
+          { label: 'name', prop: 'name', slot: { default: 'linking' }},
+          { label: 'check', prop: 'check', sortable: true }],
+        data: [
+          { name: 'n1', check: '0.23' },
+          { name: 'n2', check: '0.52' },
+          { name: 'n3', check: '0.123' },
+          { name: 'n4', check: '0.6234' },
+          { name: 'n5', check: '0.1546' },
+          { name: 'n6', check: '0.34' },
+          { name: 'n7', check: '0.231' }
+        ]
+      }
+    }
+  },
+  methods: {
+    clickLinking(pos) {
+      console.log(pos)
     }
   }
 }

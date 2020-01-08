@@ -1,6 +1,8 @@
 <template>
-  <div style="width:200px;">
-    <data-form :content="content"/>
+  <div style="width:100%;">
+    <div style="width:200px;">
+      <data-form :content="content"/>
+    </div>
     <table-temp :tableattr="table" @linking-click="clickLinking"/>
   </div>
 </template>
@@ -24,7 +26,7 @@ export default {
       },
       table: {
         columns: [
-          { type: 'index' },
+          { type: 'index', label: 'id', width: 50 },
           { label: 'name', prop: 'name', slot: { default: 'linking' }},
           { label: 'check', prop: 'check', sortable: true }],
         data: [

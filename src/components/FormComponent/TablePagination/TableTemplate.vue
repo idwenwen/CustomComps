@@ -1,5 +1,5 @@
 <script>
-import { colorRgb, clone } from '@u'
+import { clone, colorRgb } from '@u'
 export default {
   name: 'TableTemplate',
 
@@ -53,6 +53,14 @@ export default {
         color: '#409eff',
         cursor: 'pointer'
       },
+      defaultCellStyle: {
+        backgroundColor: '#F8F8FA',
+        fontSize: '1.12rem',
+        fontFamily: 'Lato',
+        color: '#7F7D8E',
+        padding: '5px',
+        border: '1px solid #fff'
+      },
       // Default attribute for table
       defaultTableSetting: {
         data: {},
@@ -60,6 +68,7 @@ export default {
         fit: false,
         hightlight: true,
         cellStyle: this._defaultCellStyle,
+        headerCellStyle: this._defaultHeaderCellStyle,
         emptyText: 'No Data',
         tooltip: 'light',
         size: 'mini',
@@ -77,7 +86,6 @@ export default {
       return 'el-table_' + now + '_' + rand
     },
     columnsAttr() {
-      debugger
       const final = this._mergeObj(this.defaultTableSetting, this.tableattr)
       return final
     }
@@ -85,17 +93,16 @@ export default {
 
   methods: {
     _defaultCellStyle({ row, column, rowIndex, columnIndex }) {
-      const style = {
-        'background-color': '#F8F8FA',
-        'font-size': '1.12rem',
-        'font-family': 'Lato',
-        'color': '#7F7D8E'
+      const style = clone(this.defaultCellStyle)
+      if (columnIndex === 0) {
+        style['backgroundColor'] = '#E8E8EF'
       }
-      if (rowIndex === 0) {
-        style['background-color'] = colorRgb('#494ECE', 0.2)
-      } else if (columnIndex === 0) {
-        style['abckground-color'] = '#E8E8EF'
-      }
+      return style
+    },
+
+    _defaultHeaderCellStyle({ row, column, rowIndex, columnIndex }) {
+      const style = clone(this.defaultCellStyle)
+      style['backgroundColor'] = colorRgb('#494ece', 0.2)
       return style
     },
 
@@ -180,10 +187,9 @@ export default {
   },
 
   render(h) {
-    debugger
     const columns = []
     for (const val of this.columnsAttr.columns) {
-      columns.push(this.columnAttribute(val, h))
+      columns.push(h('el-table-column', this.columnAttribute(val, h), []))
     }
     return h(
       'el-table', this.tableAttribute(), columns)

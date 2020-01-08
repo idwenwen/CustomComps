@@ -4,17 +4,20 @@
       <data-form :content="content"/>
     </div>
     <table-temp :tableattr="table" @linking-click="clickLinking"/>
+    <pagination :total="total" />
   </div>
 </template>
 
 <script>
 import dataForm from '@c/FormComponent/DataFormat'
 import tableTemp from '@c/FormComponent/TablePagination/TableTemplate'
+import pagination from '@c/FormComponent/TablePagination/PaginationTemplate'
 export default {
   name: 'MainField',
   components: {
     dataForm,
-    tableTemp
+    tableTemp,
+    pagination
   },
   data() {
     return {
@@ -38,12 +41,14 @@ export default {
           { name: 'n6', check: '0.34' },
           { name: 'n7', check: '0.231' }
         ]
-      }
+      },
+      total: 100,
+      layout: 'total, sizes, page, jumper'
     }
   },
   methods: {
     clickLinking(pos) {
-      console.log(pos)
+      console.log(arguments)
     }
   }
 }

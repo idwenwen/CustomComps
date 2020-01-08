@@ -157,7 +157,7 @@ export default {
       for (const key in col) {
         if (key === 'slot') {
           for (const name in col[key]) {
-            if (typeof col[key] !== 'function') {
+            if (typeof col[key][name] !== 'function') {
               attr.scopedSlots[name] = (prop) => {
                 return vm.linkingSlot(prop, createElement)
               }
@@ -177,10 +177,10 @@ export default {
     // Pre-setting linking slot
     linkingSlot(prop, createElement) {
       const vm = this
-      const attr = { props: {}, on: {}}
-      attr.props.style = this.defaultLinkingStyle
-      attr.on.click = (pos) => {
-        vm.$emit('linkingClick', pos)
+      const attr = { on: {}}
+      attr.style = this.defaultLinkingStyle
+      attr.on.click = (ev) => {
+        vm.$emit('linking-click', ev, prop)
       }
       return createElement('span', attr, prop.row[prop.column.property])
     }

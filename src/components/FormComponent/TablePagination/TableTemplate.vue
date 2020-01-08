@@ -73,7 +73,10 @@ export default {
         tooltip: 'light',
         size: 'mini',
         type: true
-      }
+      },
+
+      // loading for component
+      loading: false
     }
   },
   computed: {
@@ -135,6 +138,12 @@ export default {
         comps[opera](...args)
       }
     },
+    startLoaing() {
+      this.loading = true
+    },
+    endLoading() {
+      this.loading = false
+    },
 
     /** *** Drawing Function *** **/
     // Initing Attribute of el-table
@@ -147,6 +156,12 @@ export default {
           attr.props[key] = this.columnsAttr[key]
         }
       }
+      attr.props.directives = [
+        {
+          name: 'loading',
+          value: this.loading
+        }
+      ]
       return attr
     },
 

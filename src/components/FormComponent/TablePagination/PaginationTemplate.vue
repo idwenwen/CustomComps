@@ -1,4 +1,7 @@
 <script>
+/**
+ * events: prevClick, nextClick, currentPageChange, sizeChange
+ */
 export default {
   name: 'PaginnationTemplate',
   props: {
@@ -39,7 +42,7 @@ export default {
       pageSizes: [5, 10, 20, 30, 50],
 
       /** *** Slot-components attr *** **/
-      jumperInput: this.currentPage
+      jumperInput: ''
     }
   },
   computed: {
@@ -96,13 +99,10 @@ export default {
       this.currentPage = 1
       this.pageSize = 10
     },
-    // change current page
-    setCurrentPage(val) {
-      this.currentPage = parseInt(val) || 1
-    },
 
     /** *** Drawing Operation *** **/
     pageAttr(createElement) {
+      const vm = this
       const attr = {
         class: '_pg_page',
         props: {
@@ -115,6 +115,12 @@ export default {
           small: this.small,
           hideOnSinglePage: this.hideOnSinglePage
         },
+        on: this._mergeObj({
+          'current-change': function(val) {
+            vm.currentPage = val
+            vm.$emit('currentPageChange', val)
+          }
+        }, this.$listeners),
         ref: this.paginationRef
       }
       return createElement('el-pagination', attr, [])

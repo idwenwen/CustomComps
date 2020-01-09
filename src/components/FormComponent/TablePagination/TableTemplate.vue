@@ -1,5 +1,5 @@
 <script>
-import { clone, colorRgb } from '@u'
+import { clone } from '@u'
 export default {
   name: 'TableTemplate',
 
@@ -44,6 +44,10 @@ export default {
     tableattr: {
       type: Object,
       default: () => {}
+    },
+    datas: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -53,22 +57,15 @@ export default {
         color: '#409eff',
         cursor: 'pointer'
       },
-      defaultCellStyle: {
-        backgroundColor: '#F8F8FA',
-        fontSize: '1.12rem',
-        fontFamily: 'Lato',
-        color: '#7F7D8E',
-        padding: '5px',
-        border: '1px solid #fff'
-      },
       // Default attribute for table
       defaultTableSetting: {
-        data: {},
-        border: true,
+        border: false,
         fit: false,
-        hightlight: true,
-        cellStyle: this._defaultCellStyle,
-        headerCellStyle: this._defaultHeaderCellStyle,
+        highlightCurrentRow: true,
+        rowClassName: '_table_body_row',
+        cellClassName: '_table_body_cell',
+        headerCellClassName: '_table_header_cell',
+        headerRowClassName: '_table_header_row',
         emptyText: 'No Data',
         tooltip: 'light',
         size: 'mini',
@@ -95,20 +92,6 @@ export default {
   },
 
   methods: {
-    _defaultCellStyle({ row, column, rowIndex, columnIndex }) {
-      const style = clone(this.defaultCellStyle)
-      if (columnIndex === 0) {
-        style['backgroundColor'] = '#E8E8EF'
-      }
-      return style
-    },
-
-    _defaultHeaderCellStyle({ row, column, rowIndex, columnIndex }) {
-      const style = clone(this.defaultCellStyle)
-      style['backgroundColor'] = colorRgb('#494ece', 0.2)
-      return style
-    },
-
     _mergeObj(...objs) {
       const final = {}
       if (!objs || objs.length === 0) {
@@ -162,6 +145,7 @@ export default {
           value: this.loading
         }
       ]
+      attr.props.data = this.datas
       return attr
     },
 
@@ -211,3 +195,37 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+  ._table_header_row {
+    font-size: 1.12rem;
+    font-family: 'Lato';
+    color: #7F7D8E;
+    border-bottom: 1px solid #fff !important;
+    ._table_header_cell {
+      border: 1px solid #fff;
+      background-color: rgba(73,78,206, 0.2);
+    }
+  }
+
+  ._table_body_row {
+    font-size: 1.12rem;
+    font-family: 'Lato';
+    color: #7F7D8E;
+    border-bottom: 1px solid #fff !important;
+    td:first-child {
+      background-color: #E8E8EF;
+    }
+    ._table_body_cell {
+      border: 1px solid #fff;
+      background-color: #F8F8FA;
+    }
+  }
+
+  .current-row{
+    td{
+      background-color: #FF8103 !important;
+      color: #fff;
+    }
+  }
+</style>

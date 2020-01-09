@@ -54,6 +54,9 @@ export default {
         rand += new Array(3 - rand.length).fill(0).join()
       }
       return 'el-pagination_' + now + '_' + rand
+    },
+    countPage() {
+      return Math.ceil(this.total / this.pageSize)
     }
   },
   methods: {
@@ -89,11 +92,6 @@ export default {
         emit(ref[opera])
       }
     },
-    // Resetting pageSize
-    rePageSize(val) {
-      this.currentPage = Math.ceil(this.currentPage * this.pageSize / val)
-      this.pageSize = val
-    },
     // Return to initial setting
     resetting() {
       this.currentPage = 1
@@ -115,12 +113,18 @@ export default {
           small: this.small,
           hideOnSinglePage: this.hideOnSinglePage
         },
-        on: this._mergeObj({
+        on: {
           'current-change': function(val) {
             vm.currentPage = val
-            vm.$emit('currentPageChange', val)
+            vm.$emit('current-change', val)
+          },
+          'prev-click': function(val) {
+            vm.$emit('prev-click', val)
+          },
+          'next-click': function(val) {
+            vm.$emit('next-click', val)
           }
-        }, this.$listeners),
+        },
         ref: this.paginationRef
       }
       return createElement('el-pagination', attr, [])
@@ -140,7 +144,12 @@ export default {
           },
           on: {
             change: function(val) {
-              vm.currentPage = parseInt(vm.jumperInput) || 1
+              let cp = parseInt(vm.jumperInput) || 1
+              if (cp > vm.countPage) {
+                cp = vm.countPage
+              }
+              vm.currentPage = cp
+              vm.$emit('current-change', vm.currentPage)
             },
             input: function(val) {
               vm.jumperInput = val
@@ -151,6 +160,7 @@ export default {
     },
 
     sizesAttr(createElement) {
+      const vm = this
       const options = []
       for (const val of this.pageSizes) {
         options.push(createElement('el-option', {
@@ -167,7 +177,18 @@ export default {
           value: this.pageSize
         },
         on: {
-          change: this.rePageSize
+          change: function(val) {
+            let cp = Math.ceil(vm.currentPage * vm.pageSize / val)
+            vm.pageSize = val
+            if (cp > vm.countPage) {
+              cp = vm.countPage
+            }
+            vm.$emit('size-change', vm.pageSize)
+            vm.$nextTick(() => {
+              vm.currentPage = cp
+              vm.$emit('current-change', vm.currentPage)
+            })
+          }
         }
       }, options)
     },

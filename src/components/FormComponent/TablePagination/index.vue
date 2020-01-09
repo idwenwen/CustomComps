@@ -1,7 +1,7 @@
 <template>
   <div class="tpg_container">
     <header class="_tpg_header">
-      <slot :data="content.data" name="header"/>
+      <slot :datas="datas" name="header"/>
       <div v-if="!hasSearch && hasSearch !== 'none'">
         <el-input
           v-model="querySearch"
@@ -13,10 +13,18 @@
       </div>
     </header>
     <main class="_tpg_main">
-      <c-table ref="cTable" :content="content"/>
+      <c-table
+        ref="cTable"
+        :tableattr="attrs"
+        :datas="displayData"
+        v-on="$listeners"/>
     </main>
     <footer class="_tpg_footer">
-      <c-pagination ref="cPagination" :total="total"/>
+      <c-pagination
+        ref="cPagination"
+        :total="total"
+        @current-change="currentChange"
+        @size-change="sizeChange"/>
     </footer>
   </div>
 </template>
@@ -24,6 +32,7 @@
 <script>
 import cPagination from './PaginationTemplate'
 import cTable from './TableTemplate'
+import { clone } from '@u'
 export default {
   name: 'TablePagination',
   components: {
@@ -36,15 +45,10 @@ export default {
       type: Object,
       default: () => {}
     },
-    // Data of table
-    data: {
+    // Datas of table
+    datas: {
       type: Array,
       default: () => []
-    },
-    // Count of data
-    total: {
-      type: Number,
-      default: 1
     },
     // Has Searching chooses: [ fuzzy(true) | correct | none(false) ]
     hasSearch: {
@@ -63,25 +67,41 @@ export default {
     return {
       querySearch: '',
 
-      // Do not need request table Data if get all data
-      allData: false,
-
-      currentPage: 1,
-      pageSize: 10,
-
-      eachPage: []
+      total: 0,
+      currentPage: 0,
+      pageSize: 0
     }
   },
   computed: {
+    displayData() {
+      const final = []
+      const start = this.pageSize * (this.currentPage - 1)
+      for (let i = 0; i < this.pageSize; i++) {
+        if (this.datas[start + i]) {
+          final.push(clone(this.datas[start + i]))
+        } else {
+          break
+        }
+      }
+      return final
+    }
+  },
+
+  created() {
+    this.initial()
   },
   methods: {
     initial() {
       // Checking out does it all data
-      if (this.data.length === this.total) {
-        this.allData = true
-      } else {
-        this.allData = false
-      }
+      this.total = this.datas.length
+      this.currentPage = 1
+      this.pageSize = 10
+    },
+    currentChange(val) {
+      this.currentPage = val
+    },
+    sizeChange(val) {
+      this.pageSize = val
     },
     fuzzyQuery(fuzzy) {
 

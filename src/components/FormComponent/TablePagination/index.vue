@@ -2,13 +2,13 @@
   <div class="tpg_container">
     <header class="_tpg_header">
       <slot :datas="datas" name="header"/>
-      <div v-if="!hasSearch && hasSearch !== 'none'">
+      <div v-if="!hasSearch && hasSearch !== 'none'" class="_tpg_search">
         <el-input
           v-model="querySearch"
           :clearable="true"
-          size="mini"
+          size="small"
           placement="key word">
-          <i slot="suffix" class="el-input__icon el-icon-date"/>
+          <i slot="suffix" class="el-input__icon el-icon-search"/>
         </el-input>
       </div>
     </header>
@@ -110,6 +110,28 @@ export default {
 }
 </script>
 
-<style lang="" scoped>
-
+<style lang="scss" scoped>
+.tpg_container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0px;
+  border-bottom: 1px solid #E8E8EF;
+  ._tpg_header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+    margin-bottom: 10px;
+    ._tpg_search {
+      max-width: 20%;
+    }
+  }
+  ._tpg_main {
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+  ._tpg_footer {
+    max-width: 100%;
+  }
+}
 </style>

@@ -176,10 +176,12 @@ export default {
     // Pre-setting linking slot
     linkingSlot(prop, createElement) {
       const vm = this
-      const attr = { on: {}}
+      const attr = {}
       attr.style = this.defaultLinkingStyle
-      attr.on.click = (ev) => {
-        vm.$emit('linking-click', ev, prop)
+      attr.on = {
+        click: (ev) => {
+          vm.$emit('linking-click', ev, prop)
+        }
       }
       return createElement('span', attr, prop.row[prop.column.property])
     }
@@ -224,8 +226,7 @@ export default {
 
   .current-row{
     td{
-      background-color: #FF8103 !important;
-      color: #fff;
+      background-color: rgba(255,129,3,0.2) !important;
     }
   }
 </style>

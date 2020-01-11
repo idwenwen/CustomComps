@@ -1,26 +1,31 @@
 import { callHook } from './lifeCycle'
 
-let COUNT = 1
-
 /**
  * Initing options for drawing component including
- * @param {canvas, data, path} layer
+ * @param {canvas, data, path} Layer
  */
-export default function InitOptions(layer) {
-  layer.prototype._InitOptions = function({ canvas, data, path, clear, zIndex = false }) {
-    COUNT++
+export default function InitOptions(Layer) {
+  Layer.prototype._InitOptions = function(props) {
     const lay = this
-    initUUID.call(lay)
-    initCanvas.call(lay, canvas)
-    initData.call(lay, data)
-    initPath.call(lay, path)
-    initClear.call(lay, clear)
-    initZIndex.call(lay, zIndex)
-    initMetas.call(lay)
+    lay.setProps(props)
     callHook.call(lay, 'afterInit')
   }
 
-  layer.prototype.setLayer = function(obj) {
+  Layer.prototype.setUUID = function() {
+    const lay = this
+    if (lay.$uuid) {
+      initUUID.call(lay)
+    }
+  }
+
+  Layer.prototype.setCanvas = function(canvas) {
+    const lay = this
+    lay._$canvas = canvas
+    lay._$ctx = canvas.getContext('2d')
+    lay.updated()
+  }
+
+  Layer.prototype.setData = function(obj) {
     const lay = this
     const add = {}
     for (const key in obj) {
@@ -29,24 +34,37 @@ export default function InitOptions(layer) {
     initData.call(lay, add)
   }
 
-  layer.prototype.setPath = function(newPath) {
-    initPath(newPath)
+  Layer.prototype.setPath = function(newPath) {
+    const lay = this
+    lay._$path = newPath
+    lay.updated()
+  }
+
+  Layer.prototype.setClear = function(clear) {
+    const lay = this
+    lay._$clear = clear
+  }
+
+  Layer.prototype.setZIndex = function(zIndex) {
+    const lay = this
+    lay.$zIndex = zIndex
   }
 
   // Setting Actual displaying-width
-  layer.prototype.setWidth = function(aw) {
+  Layer.prototype.setWidth = function(aw) {
     const lay = this
     lay.$actualWidth = aw
   }
 
   // Setting Actual displaying-height
-  layer.prototype.setHeigth = function(ah) {
+  Layer.prototype.setHeigth = function(ah) {
     const lay = this
     lay.$actualHeight = ah
   }
 
-  layer.prototype.setMetas = function(name, key) {
+  Layer.prototype.setMetas = function(name, key) {
     const lay = this
+    if (!lay.$metas) initMetas()
     if (typeof name === 'object') {
       const obj = name
       for (const key in obj) {
@@ -56,6 +74,18 @@ export default function InitOptions(layer) {
       lay.$metas[name] = key
     }
   }
+
+  Layer.prototype.setProps = function({ canvas, data, path, clear, zIndex = false }) {
+    const lay = this
+    lay.$metas = {}
+    lay.setUUID()
+    lay.setCanvas(canvas)
+    lay.setData(data)
+    lay.setPath(path)
+    lay.setClear(clear)
+    lay.setZIndex(zIndex)
+    lay.updated()
+  }
 }
 
 // Setting UUID for drawing components
@@ -63,12 +93,6 @@ function initUUID() {
   const now = new Date().getTime().toString().substr(-7)
   const ran = Math.random() * 100
   this.$uuid = COUNT + '_' + now + '_' + ran
-}
-
-function initCanvas(canvas) {
-  const lay = this
-  lay._$ctx = canvas.getContext('2d')
-  lay.updated()
 }
 
 // Initing data for this
@@ -93,27 +117,6 @@ function initData(data) {
     }
     lay.updated() // After adding props,component should be redrawed
   }
-}
-
-function initPath(path) {
-  const lay = this
-  lay._$path = path
-  lay.updated()
-}
-
-function initClear(clear) {
-  const lay = this
-  lay._$clear = clear
-}
-
-function initZIndex(index) {
-  const lay = this
-  lay.$zIndex = index
-}
-
-function initMetas() {
-  const lay = this
-  lay.$metas = {}
 }
 
 function mergeObj(...obj) {

@@ -1,17 +1,22 @@
 import { callHook } from './lifeCycle'
 
-export default function InitDrawing(layer) {
-  layer.prototype._InitDrawing = function() {
+export default function InitDrawing(Layer) {
+  Layer.prototype._InitDrawing = function() {
     callHook.call(this, 'beforeDrawing')
     drawing.call(this)
   }
 
-  // operation may be a function or an object
-  layer.prototype.drawLayer = function(operation) {
-    // TODO
+  // Setting children layer
+  Layer.prototype.drawLayer = function(name, operation) {
+    const lay = this
+    if (!lay._$children[name]) {
+      lay._$children.push(new Layer(operation))
+    } else {
+      lay._$children[name].setProps(operation)
+    }
   }
 
-  layer.prototype.reDrawing = function(force) {
+  Layer.prototype.reDrawing = function(force) {
     const lay = this
     if (force) {
       lay.updated()

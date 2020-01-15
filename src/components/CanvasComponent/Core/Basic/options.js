@@ -21,7 +21,7 @@ export default function InitOptions(Layer) {
   Layer.prototype.setCanvas = function(canvas) {
     const lay = this
     lay._$canvas = canvas
-    lay._$ctx = canvas.getContext('2d')
+    lay.$ctx = canvas.getContext('2d')
     lay.updated()
   }
 

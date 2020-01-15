@@ -61,6 +61,6 @@ function clearDrawing() {
   if (lay._$clear) {
     lay._$clear()
   } else if (lay.$actualWidth && lay.$actualHeight) {
-    lay._$ctx.clearRect(0, 0, lay.$actualWidth, lay.$actualHeight)
+    lay.$ctx.clearRect(0, 0, lay.$actualWidth, lay.$actualHeight)
   }
 }

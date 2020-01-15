@@ -64,7 +64,7 @@ export default function InitOptions(Layer) {
 
   Layer.prototype.setMetas = function(name, key) {
     const lay = this
-    if (!lay.$metas) initMetas()
+    if (!lay.$metas) lay.meta = {}
     if (typeof name === 'object') {
       const obj = name
       for (const key in obj) {
@@ -75,7 +75,7 @@ export default function InitOptions(Layer) {
     }
   }
 
-  Layer.prototype.setProps = function({ canvas, data, path, clear, zIndex = false }) {
+  Layer.prototype.setProps = function({ canvas, data = {}, path, clear = () => {}, zIndex = 0 }) {
     const lay = this
     lay.$metas = {}
     lay.setUUID()
@@ -92,7 +92,7 @@ export default function InitOptions(Layer) {
 function initUUID() {
   const now = new Date().getTime().toString().substr(-7)
   const ran = Math.random() * 100
-  this.$uuid = COUNT + '_' + now + '_' + ran
+  this.$uuid = 'canvas_' + now + '_' + ran
 }
 
 // Initing data for this

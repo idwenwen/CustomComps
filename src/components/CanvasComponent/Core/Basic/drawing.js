@@ -9,10 +9,15 @@ export default function InitDrawing(Layer) {
   // Setting children layer
   Layer.prototype.drawLayer = function(name, operation) {
     const lay = this
+    let op = operation
+    if (typeof operation === 'function') {
+      op = { canvas: this._$canvas, path: operation }
+    }
+    op._parent = lay
     if (!lay._$children[name]) {
-      lay._$children.push(new Layer(operation))
+      lay.addChild(name, new Layer(op))
     } else {
-      lay._$children[name].setProps(operation)
+      lay._$children[name].setProps(op)
     }
   }
 
@@ -28,5 +33,34 @@ export default function InitDrawing(Layer) {
 }
 
 function drawing() {
-  // TODO
+  const lay = this
+  const drawingList = []
+  clearDrawing.call(lay)
+  lay._$path()
+  if (lay._$children) {
+    for (const key in lay._$children) {
+      drawingList.push({ name: key, index: lay._$children[key].$zIndex })
+    }
+    drawingList.sort((a, b) => {
+      if (a.index < b.index) {
+        return -1
+      } else if (a.index > b.index) {
+        return 1
+      } else {
+        return 0
+      }
+    })
+    for (const val of drawingList) {
+      drawing.call(lay._$children[val.name])
+    }
+  }
+}
+
+function clearDrawing() {
+  const lay = this
+  if (lay._$clear) {
+    lay._$clear()
+  } else if (lay.$actualWidth && lay.$actualHeight) {
+    lay._$ctx.clearRect(0, 0, lay.$actualWidth, lay.$actualHeight)
+  }
 }

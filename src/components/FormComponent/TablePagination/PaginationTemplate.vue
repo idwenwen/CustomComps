@@ -60,19 +60,6 @@ export default {
     }
   },
   methods: {
-    /** *** Inner function *** **/
-    _mergeObj(...obj) {
-      const final = {}
-      if (obj && obj.length >= 0) {
-        for (const val of obj) {
-          for (const key in val) {
-            final[key] = val[key]
-          }
-        }
-      }
-      return final
-    },
-
     /** *** Operable function *** **/
     // Can be used to calling pagination methods
     calling(opera, ...args) {

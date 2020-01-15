@@ -20,7 +20,7 @@
     </header>
     <main :style="widthRate.main" class="br_c_value">
       <el-tooltip :disabled="foldType !== 'tooltip'" :content="keyToContent" placement="bottom" effect="light">
-        <div :style="mergeObject(breakWord, fontStyle)" class="__bf_value_p">
+        <div :style="valueStyle" class="__bf_value_p">
           {{ keyToContent }}
           <div v-if="foldType === 'icon'" :class="iconStyle" class="__bf_value_p_icon" @click="showFull"/>
           <slot :content="content" name="view"/>
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { getActualFontSize } from '@u'
+import { getActualFontSize, mergeObj } from '@u'
 export default {
   /**
    * Showing key value pair with designated structure
@@ -184,6 +184,10 @@ export default {
         'font-size': typeof this.fontSize === 'number' ? this.fontSize + 'px' : this.fontSize
       }
       return style
+    },
+
+    valueStyle() {
+      return mergeObj(this.breakWord, this.fontStyle)
     }
   },
 
@@ -214,17 +218,6 @@ export default {
     showFull() {
       // unfold-attribute will influence breakWord(computed), icon-style(computed)
       this.unfold = !this.unfold
-    },
-
-    // Merge Objects
-    mergeObject(...obj) {
-      const final = {}
-      for (const val of obj) {
-        for (const key in val) {
-          final[key] = val[key]
-        }
-      }
-      return final
     }
   }
 }

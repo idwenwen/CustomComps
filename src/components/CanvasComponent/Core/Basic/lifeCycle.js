@@ -1,12 +1,15 @@
 import { destroyOptions } from './options'
+import { mergeObj } from '@u'
+import { destoryAnimation } from './animation'
+import { destoryEvent } from './event'
 
 export default function InitLifeCycle(layer) {
-  layer.prototype._InitLifeCycle = function({ afterInit, beforeDrawing }) {
+  layer.prototype._InitLifeCycle = function({ afterInit, beforeDrawing, _parent }) {
     const lay = this
     lay._$updated = false
     lay._$destroied = false
-    lay._$children = []
-    lay._$parent = null
+    lay._$children = {}
+    lay._$parent = _parent
     lay.$afterInit = afterInit
     lay.$beforeDrawing = beforeDrawing
   }
@@ -22,15 +25,11 @@ export default function InitLifeCycle(layer) {
     }
   }
 
-  layer.prototype.setParent = function(parent) {
-    this._$parent = parent
-  }
-
-  layer.prototype.addChild = function(child) {
-    if (Array.isArray(child)) {
-      this._$children.push(...child)
+  layer.prototype.addChild = function(name, child) {
+    if (typeof name === 'object') {
+      mergeObj(this._$children, name)
     } else {
-      this._$children.push(child)
+      this._$children[name] = child
     }
   }
 
@@ -50,10 +49,17 @@ export default function InitLifeCycle(layer) {
         return true
       }
     })
+    this.updated()
   }
 
-  layer.prototyperoy = function() {
-    destroyOptions.call(this)
+  layer.prototype.destory = function() {
+    const lay = this
+    if (lay._$parent) {
+      lay._$parent.removeChild(lay.$uuid)
+    }
+    destroyOptions.call(lay)
+    destoryEvent.call(lay)
+    destoryAnimation.call(lay)
   }
 }
 

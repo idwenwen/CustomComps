@@ -23,7 +23,7 @@ export default {
   data() {
     return {
       content: {
-        content: [{ name: [1, 2, 3, 4], content: ['h', 'e', 'l', 'o'] },
+        content: [{ name: [1, 2, 3, 4, 5], content: ['h', 'e', 'l', 'l', 'o'] },
           { name: 'host', content: 'hello you there,this is a long distance', breakLine: 2 },
           { name: 'guest', content: 'check this' }],
         title: 'checkout'
@@ -50,6 +50,7 @@ export default {
   methods: {
     clickLinking(pos) {
       console.log(arguments)
+      alert('屋里乖乖')
     }
   }
 }

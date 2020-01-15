@@ -49,4 +49,16 @@ function colorRgb(color, opacity) {
   return sColor
 }
 
-export { clone, fontToPx, getActualFontSize, colorRgb }
+function mergeObj(...obj) {
+  const final = {}
+  if (obj.length >= 1) {
+    for (const val of obj) {
+      for (const key in val) {
+        final[key] = val
+      }
+    }
+  }
+  return final
+}
+
+export { clone, fontToPx, getActualFontSize, colorRgb, mergeObj }

@@ -1,77 +1,77 @@
-// state: { pos: [{x, y}, {x, y} ...], style:{}, arc:true/false }
-const line = {
+/**
+ * state: {
+ *  point: [{x, y}]
+ *  style: {},
+ *  curve: boolean,
+ *  stroke: boolean
+ * }
+ */
+import { uuidSupport } from '@u'
+import { stroke } from '../tools'
+
+const lineComp = {
   drawLine(lay, name, obj) {
     if (typeof name === 'object') {
       obj = name
-      name = 'line'
+      name = uuidSupport('line')
     }
+    obj.path = path
     lay.drawLayer(name, obj)
-  },
-  path() {
-    const lay = this
-    if (lay.arc || lay.pos.length <= 2) {
-      brokeLine.call(lay)
-    } else {
-      curve.call(lay)
-    }
+    return name
   }
 }
 
-export function brokeLine() {
+// path for line-drawing component
+function path() {
   const lay = this
-  const ctx = lay.$ctx
-  ctx.beginPath()
-  for (let i = 0; i < lay.pos.length; i++) {
-    const x = lay.pos[i].x || lay.pos[i][0]
-    const y = lay.pos[i].y || lay.pos[i][1]
-    if (i === 0) {
-      ctx.moveTo(x, y)
-    } else {
-      ctx.lineTo(x, y)
-    }
+  if (lay.curve || lay.point.length <= 2) {
+    brokeLine(lay)
+  } else {
+    curve(lay)
   }
-  ctx.save()
-  for (const key in lay.style) {
-    ctx[key] = lay.style
-  }
-  ctx.stroke()
-  ctx.restore()
-  ctx.closePath()
 }
 
-export function curve() {
-  const lay = this
+export function brokeLine(lay) {
   const ctx = lay.$ctx
-  ctx.beginPath()
-  for (let i = 0; i < lay.pos.length; i++) {
-    const x = lay.pos[i].x || lay.pos[i][0]
-    const y = lay.pos[i].y || lay.pos[i][1]
-    if (i === 0) {
-      ctx.moveTo(x, y)
-    } else {
-      if (lay.pos[i + 1]) {
-        let endX = 0
-        let endY = 0
-        if (lay.pos[i + 2]) {
-          endX = (x + (lay.pos[i + 1].x || lay.pos[i + 1][0])) / 2
-          endY = (y + (lay.pos[i + 1].y || lay.pos[i + 1][1])) / 2
-        } else {
-          endX = lay.pos[i + 1].x || lay.pos[i + 1][0]
-          endY = lay.pos[i + 1].y || lay.pos[i + 1][1]
-        }
-        ctx.quadraticCurveTo(x, y, endX, endY)
+  stroke(ctx, lay.style, (ctx) => {
+    for (let i = 0; i < lay.point.length; i++) {
+      const x = lay.point[i].x || lay.point[i][0]
+      const y = lay.point[i].y || lay.point[i][1]
+      if (i === 0) {
+        ctx.moveTo(x, y)
       } else {
         ctx.lineTo(x, y)
       }
     }
-  }
-  ctx.save()
-  for (const key in lay.style) {
-    ctx[key] = lay.style
-  }
-  ctx.stroke()
-  ctx.restore()
-  ctx.closePath()
+  })
 }
 
-export default line
+export function curve(lay) {
+  const ctx = lay.$ctx
+  stroke(ctx, lay.style, (ctx) => {
+    for (let i = 0; i < lay.point.length; i++) {
+      const x = lay.point[i].x || lay.point[i][0]
+      const y = lay.point[i].y || lay.point[i][1]
+      if (i === 0) {
+        ctx.moveTo(x, y)
+      } else {
+        if (lay.point[i + 1]) {
+          let endX = 0
+          let endY = 0
+          if (lay.point[i + 2]) {
+            endX = (x + (lay.point[i + 1].x || lay.point[i + 1][0])) / 2
+            endY = (y + (lay.point[i + 1].y || lay.point[i + 1][1])) / 2
+          } else {
+            endX = lay.point[i + 1].x || lay.point[i + 1][0]
+            endY = lay.point[i + 1].y || lay.point[i + 1][1]
+          }
+          ctx.quadraticCurveTo(x, y, endX, endY)
+        } else {
+          ctx.lineTo(x, y)
+        }
+      }
+    }
+  })
+}
+
+export default lineComp

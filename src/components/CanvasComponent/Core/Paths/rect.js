@@ -4,6 +4,7 @@
  *  radius: Number,
  *  width: Number,
  *  height: Number,
+ *  progress: Number (0 - 1)
  *  position: enum:[LEFT_UP, LEFT_DOWN, RIGHT_UP, RIGHT_DOWN, CENTER]
  *  style: {}
  *  stroke: boolaan
@@ -30,7 +31,10 @@ const rectComp = {
   RIGHT_UP: COMMON.RIGHT_UP,
   LEFT_DOWN: COMMON.LEFT_DOWN,
   RIGHT_DOWM: COMMON.RIGHT_DOWM,
-  CENTER: COMMON.CENTER
+  CENTER: COMMON.CENTER,
+  animation: {
+
+  }
 }
 
 function path() {
@@ -58,42 +62,70 @@ export function rect(lay) {
     const r = lay.radius || COMMON._RADIUS
     const w = lay.width
     const h = lay.height
+    const p = lay.progress || 1
 
-    const startX = x - w / 2 + r
-    const startY = y - h / 2
-    ctx.moveTo(startX, startY)
+    if (p <= 0) {
+      return
+    }
 
-    let nextX = startX + w - 2 * r
-    let nextY = startY
+    let nextX = x - w / 2
+    let nextY = y - h / 2 + r
+    ctx.moveTo(nextX, nextY)
+
+    let arcX = nextX + r
+    let arcY = nextY
+    let sAng = 1 * Math.PI
+    let eAng = (w * p < r) ? (sAng + Math.acos((r - w * p) / r)) : (1.5 * Math.PI)
+    ctx.arc(arcX, arcY, r, sAng, eAng, false)
+
+    if (w * p > r) {
+      nextX = (w * p) > (w - r) ? nextX + w - 2 * r : nextX + w * p
+      nextY = nextY - r
+      ctx.lineTo(nextX, nextY)
+
+      if (w * p > w - r) {
+        arcX = nextX
+        arcY = nextY + r
+        sAng = 1.5 * Math.PI
+        eAng = p < 1 ? sAng + Math.acos((r - (w - w * p)) / r) : 0
+        ctx.arc(arcX, arcY, r, sAng, eAng, false)
+
+        nextX = nextX + (r - (w - w * p))
+        nextY = nextY + h - r - Math.cos(0.5 * Math.PI - Math.acos((r - (w - w * p)) / r)) * r
+        ctx.lineTo(nextX, nextY)
+
+        arcY = arcY + h - 2 * r
+        sAng = 0
+        eAng = p < 1 ? sAng + Math.acos((r - (w - w * p)) / r) : 0.5 * Math.PI
+        ctx.arc(arcX, arcY, r, sAng, eAng, false)
+
+        nextX = arcX - w + 3 * r
+        nextY = arcY + r
+        ctx.lineTo(nextX, nextY)
+      } else {
+        nextY = nextY + h
+        ctx.lineTo(nextX, nextY)
+
+        nextX = nextX - w * p + r
+        ctx.lineTo(nextX, nextY)
+      }
+      arcX = nextX
+      arcY = nextY - r
+      ctx.arc(arcX, arcY, r, 0.5 * Math.PI, 1 * Math.PI, false)
+    } else {
+      nextX = nextX + w * p
+      nextY = nextY + h - 2 * r + Math.sin(0.5 * Math.PI - Math.acos((r - w * p) / r)) * r
+      ctx.lineTo(nextX, nextY)
+
+      arcY = arcY + h - 2 * r
+      sAng = 1 * Math.PI - eAng
+      eAng = 1 * Math.PI
+      ctx.arc(arcX, arcY, r, sAng, eAng, false)
+    }
+
+    nextX = x - w / 2
+    nextY = y - h / 2 + r
     ctx.lineTo(nextX, nextY)
-
-    let arcX = nextX
-    let arcY = nextY + r
-    ctx.arc(arcX, arcY, r, 1.5 * Math.PI, 0, false)
-
-    nextX = nextX + r
-    nextY = nextY + h - r
-    ctx.lineTo(nextX, nextY)
-
-    arcX = nextX - r
-    arcY = nextY
-    ctx.arc(arcX, arcY, r, 0, 0.5 * Math.PI, false)
-
-    nextX = nextX - w + r
-    nextY = nextY + r
-    ctx.lineTo(nextX, nextY)
-
-    arcX = nextX
-    arcY = nextY - r
-    ctx.arc(arcX, arcY, r, 0.5 * Math.PI, 1 * Math.PI, false)
-
-    nextX = nextX - r
-    nextY = nextY - h + r
-    ctx.lineTo(nextX, nextY)
-
-    arcX = nextX + r
-    arcY = nextY
-    ctx.arc(arcX, arcY, r, 1 * Math.PI, 1.5 * Math.PI, false)
   }
   commonDrawing(lay, basicPath)
 }

@@ -118,7 +118,7 @@ export function rect(lay) {
       ctx.lineTo(nextX, nextY)
 
       arcY = arcY + h - 2 * r
-      sAng = 1 * Math.PI - eAng
+      sAng = 1 * Math.PI - Math.acos((r - w * p) / r)
       eAng = 1 * Math.PI
       ctx.arc(arcX, arcY, r, sAng, eAng, false)
     }

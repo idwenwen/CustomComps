@@ -16,16 +16,20 @@
 import { uuidSupport } from '@u'
 import COMMON from './common'
 import { commonDrawing } from '../tools'
+import Layer from '../Basic'
 
 const rectComp = {
-  drawRect(lay, name, obj) {
-    if (typeof name === 'object') {
-      obj = name
-      name = uuidSupport('rect')
-    }
+  drawRect(obj, parent, name) {
     obj.path = path
-    lay.drawLayer(name, obj)
-    return name
+    if (parent) {
+      if (!name) {
+        name = uuidSupport('rect')
+      }
+      parent.drawLayer(name, obj)
+      return name
+    } else {
+      return new Layer(obj)
+    }
   },
   LEFT_UP: COMMON.LEFT_UP,
   RIGHT_UP: COMMON.RIGHT_UP,

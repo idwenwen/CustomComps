@@ -8,16 +8,20 @@
  */
 import { uuidSupport } from '@u'
 import { stroke } from '../tools'
+import Layer from '../Basic'
 
 const lineComp = {
-  drawLine(lay, name, obj) {
-    if (typeof name === 'object') {
-      obj = name
-      name = uuidSupport('line')
-    }
+  drawLine(obj, parent, name) {
     obj.path = path
-    lay.drawLayer(name, obj)
-    return name
+    if (parent) {
+      if (!name) {
+        name = uuidSupport('line')
+      }
+      parent.drawLayer(name, obj)
+      return name
+    } else {
+      return new Layer(obj)
+    }
   }
 }
 

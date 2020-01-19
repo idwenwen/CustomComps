@@ -15,16 +15,20 @@
 import { uuidSupport } from '@u'
 import { commonDrawing } from '../tools'
 import COMMON from './common'
+import Layer from '../Basic'
 
 const arcComp = {
-  drawArc(lay, name, obj) {
-    if (typeof name === 'object') {
-      obj = name
-      name = uuidSupport('arc')
-    }
+  drawArc(obj, parent, name) {
     obj.path = path
-    lay.drawLayer(name, obj)
-    return name
+    if (parent) {
+      if (!name) {
+        name = uuidSupport('arc')
+      }
+      parent.drawLayer(name, obj)
+      return name
+    } else {
+      return new Layer(obj)
+    }
   },
   LEFT_UP: COMMON.LEFT_UP,
   RIGHT_UP: COMMON.RIGHT_UP,

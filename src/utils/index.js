@@ -63,7 +63,7 @@ function mergeObj(...obj) {
 
 function uuidSupport(sub) {
   const now = new Date().getTime().toString().substr(-7)
-  let rand = (Math.random() * 1000).toString()
+  let rand = Math.round(Math.random() * 1000).toString()
   rand = new Array(3 - rand.length).fill(0).join('') + rand
   return sub + '_' + now + rand
 }

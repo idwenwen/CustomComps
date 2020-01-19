@@ -7,5 +7,7 @@ export default {
   RIGHT_UP: 'RIGHT UP',
   LEFT_DOWN: 'LEFT DOWN',
   RIGHT_DOWN: 'RIGHT DOWN',
-  CENTER: 'CENTER'
+  CENTER: 'CENTER',
+
+  BETWEEN_TEXT_LINE: 4 // 两行字体之间的间距
 }

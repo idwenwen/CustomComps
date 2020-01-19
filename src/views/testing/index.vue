@@ -1,9 +1,10 @@
 <template>
   <div style="width:100%;">
-    <div style="width:200px;">
+    <!-- <div style="width:200px;">
       <data-form :content="content"/>
     </div>
-    <tab-page :attrs="table" :datas="tabledata"/>
+    <tab-page :attrs="table" :datas="tabledata"/> -->
+    <canvass/>
   </div>
 </template>
 
@@ -12,13 +13,16 @@ import dataForm from '@c/FormComponent/DataFormat'
 import tableTemp from '@c/FormComponent/TablePagination/TableTemplate'
 import pagination from '@c/FormComponent/TablePagination/PaginationTemplate'
 import tabPage from '@c/FormComponent/TablePagination'
+import canvass from '@c/CanvasComponent'
+
 export default {
   name: 'MainField',
   components: {
     dataForm,
     tableTemp,
     pagination,
-    tabPage
+    tabPage,
+    canvass
   },
   data() {
     return {

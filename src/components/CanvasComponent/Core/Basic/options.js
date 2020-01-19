@@ -13,7 +13,7 @@ export default function InitOptions(Layer) {
 
   Layer.prototype.setUUID = function() {
     const lay = this
-    if (lay.$uuid) {
+    if (!lay.$uuid) {
       initUUID.call(lay)
     }
   }
@@ -91,7 +91,8 @@ export default function InitOptions(Layer) {
 // Setting UUID for drawing components
 function initUUID() {
   const now = new Date().getTime().toString().substr(-7)
-  const ran = Math.random() * 100
+  let ran = Math.ceil(Math.random() * 1000).toString()
+  ran = new Array(3 - ran.length).fill(0).join('') + ran
   this.$uuid = 'canvas_' + now + '_' + ran
 }
 

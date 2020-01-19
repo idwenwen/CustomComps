@@ -18,8 +18,8 @@ export default function InitLifeCycle(layer) {
     const lay = this
     if (!this._$updated) {
       lay._$updated = true
-      for (const val of lay._$children) {
-        val.updated()
+      for (const key in lay._$children) {
+        lay._$children[key].updated()
       }
       lay._$parent && lay._$parent.updated()
     }

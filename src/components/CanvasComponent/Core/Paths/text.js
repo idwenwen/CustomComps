@@ -6,6 +6,7 @@
  *  angle: Number, // 弧度制角度， 旋转角度（0-2PI）
  *  position: ENUM:[] // 通过对象传递的参数内容
  *  width: Number, // 可以不传递
+ *  height: Number, // 最大高度
  *  style: Object,
  * }
  */
@@ -17,6 +18,7 @@ import Layer from '../Basic'
 
 const textComp = {
   drawText(obj, parent, name) {
+    obj.canvas = parent._$canvas
     obj.path = path
     if (parent) {
       if (!name) {
@@ -28,34 +30,42 @@ const textComp = {
       return new Layer(obj)
     }
   },
-  LEFT: COMMON.LEFT_UP,
-  RIGHT: COMMON.RIGHT_UP,
+  LEFT: COMMON.LEFT,
+  RIGHT: COMMON.RIGHT,
   CENTER: COMMON.CENTER
 }
 
 function path() {
+  debugger
   const lay = this
   const ctx = lay.$ctx
   const textInfo = measureText(ctx, lay.text, lay.style)
   const finalWidth = (lay.width && textInfo.width > lay.width) ? lay.width : textInfo.width
-  const sin = Math.sin(lay.angle)
-  const cos = Math.cos(lay.angle)
+  const sin = Math.sin(lay.angle || 0)
+  const cos = Math.cos(lay.angle || 0)
   const x = lay.point.x || lay.point[0]
   const y = lay.point.y || lay.point[1]
-  if (lay.postion === textComp.RIGHT) {
-    lay.point = { x: x + cos * finalWidth, y: y - sin * finalWidth }
-  } else if (lay.postion === textComp.CENTER) {
-    lay.point = { x: x + cos * finalWidth / 2, y: y - sin * finalWidth / 2 }
+  if (lay.position === textComp.RIGHT) {
+    lay.point = { x: x - cos * finalWidth, y: y - sin * finalWidth }
+  } else if (lay.position === textComp.CENTER) {
+    lay.point = { x: x - cos * finalWidth / 2, y: y - sin * finalWidth / 2 }
   }
-  text(this)
+  text.call(this)
 }
 
-export function text(lay) {
+export function text() {
+  const lay = this
   const ctx = lay.$ctx
   const textInfo = measureText(ctx, lay.text, lay.style)
   const lineWidth = lay.width || parseInt(textInfo.width)
   const lineHeight = parseInt(lay.style.font)
-  const breakLine = lay.breakLine || 1
+  const breakLine = lay.breakLine
+    ? (lay.height
+      ? (Math.floor(lay.height / (lineHeight + COMMON.BETWEEN_TEXT_LINE)) > lay.breakLine
+        ? lay.breakLine
+        : Math.floor(lay.height / (lineHeight + COMMON.BETWEEN_TEXT_LINE)))
+      : lay.breakLine)
+    : 1
   const finalLine = (lay.width && Math.ceil(parseInt(textInfo.width) / lay.width) < breakLine)
     ? Math.ceil(parseInt(textInfo.width) / lay.width)
     : breakLine

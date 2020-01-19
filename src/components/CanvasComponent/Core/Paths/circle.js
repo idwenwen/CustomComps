@@ -19,6 +19,7 @@ import Layer from '../Basic'
 
 const arcComp = {
   drawArc(obj, parent, name) {
+    obj.canvas = parent._$canvas
     obj.path = path
     if (parent) {
       if (!name) {
@@ -48,7 +49,7 @@ function path() {
   } else if (lay.position === arcComp.LEFT_DOWN) {
     lay.point = { x: x + r, y }
   }
-  arc(lay)
+  arc.call(lay)
 }
 
 export function arc(lay) {

@@ -11,13 +11,15 @@ export default {
   data() {
     return {
       style: {
-        font: '16px arial'
+        fillStyle: 'rgba(255,165,0,0.8)'
+      },
+      textStyle: {
+        font: '12px arial'
       },
       text: '1234123412341234123412341234',
       point: [200, 100],
-      breakLine: 2,
-      angle: 45 * Math.PI / 180,
-      width: 40
+      width: 100,
+      height: 40
     }
   },
 
@@ -27,15 +29,18 @@ export default {
 
   methods: {
     drawing() {
-      Layer.component.text.drawText({
+      Layer.component.tooltip.drawTooltip({
         canvas: document.getElementById('canvas'),
         data: {
           point: this.point,
           text: this.text,
           // breakLine: this.breakLine,
-          style: this.style,
-          // width: this.width,
-          angle: this.angle
+          containerStyle: this.style,
+          textStyle: this.textStyle,
+          width: this.width,
+          // angle: this.angle
+          height: this.height,
+          showing: true
         }
       })
     }

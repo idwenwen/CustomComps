@@ -12,6 +12,7 @@ import Layer from '../Basic'
 
 const lineComp = {
   drawLine(obj, parent, name) {
+    obj.canvas = parent._$canvas
     obj.path = path
     if (parent) {
       if (!name) {
@@ -29,13 +30,14 @@ const lineComp = {
 function path() {
   const lay = this
   if (lay.curve || lay.point.length <= 2) {
-    brokeLine(lay)
+    brokeLine.call(this)
   } else {
-    curve(lay)
+    curve.call(this)
   }
 }
 
-export function brokeLine(lay) {
+export function brokeLine() {
+  const lay = this
   const ctx = lay.$ctx
   stroke(ctx, lay.style, (ctx) => {
     for (let i = 0; i < lay.point.length; i++) {
@@ -50,7 +52,8 @@ export function brokeLine(lay) {
   })
 }
 
-export function curve(lay) {
+export function curve() {
+  const lay = this
   const ctx = lay.$ctx
   stroke(ctx, lay.style, (ctx) => {
     for (let i = 0; i < lay.point.length; i++) {

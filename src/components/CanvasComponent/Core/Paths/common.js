@@ -9,5 +9,14 @@ export default {
   RIGHT_DOWN: 'RIGHT DOWN',
   CENTER: 'CENTER',
 
-  BETWEEN_TEXT_LINE: 4 // 两行字体之间的间距
+  UP: 'UP',
+  BOTTOM: 'BOTTOM',
+  LEFT: 'LEFT',
+  RIGHT: 'RIGHT',
+
+  BETWEEN_TEXT_LINE: 4, // 两行字体之间的间距
+
+  TOLLTIP_TANGLE_SIZE: 5,
+  TOLLTIP_BETWEEN: 5,
+  TOLLTIP_PADDING: 5
 }

@@ -20,6 +20,7 @@ import Layer from '../Basic'
 
 const rectComp = {
   drawRect(obj, parent, name) {
+    obj.canvas = parent._$canvas
     obj.path = path
     if (parent) {
       if (!name) {
@@ -56,10 +57,11 @@ function path() {
   } else if (lay.position === rectComp.RIGHT_DOWM) {
     lay.point = { x: x - w / 2, y: y - h / 2 }
   }
-  rect(lay)
+  rect.call(lay)
 }
 
-export function rect(lay) {
+export function rect() {
+  const lay = this
   const basicPath = (ctx) => {
     const x = lay.point.x || lay.point[0]
     const y = lay.point.y || lay.point[1]

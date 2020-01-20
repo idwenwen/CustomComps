@@ -66,11 +66,17 @@ function beatOnce() {
     for (const key in animationList) {
       for (const type in animationList[key]) {
         if (type === '_$component') continue
+        let index = 0
         for (const val of animationList[key][type]) {
           val['round']++
           if (val['round'] * 100 >= val.time) {
-            val.operation.call(animationList[key]['_$component'])
-            val['round'] = 0
+            const result = val.operation.call(animationList[key]['_$component'])
+            if (!result) {
+              animationList[key][type].splice(index, 1)
+            } else {
+              val['round'] = 0
+            }
+            index++
           }
         }
       }

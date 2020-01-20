@@ -19,7 +19,7 @@ import Layer from '../Basic'
 
 const arcComp = {
   drawArc(obj, parent, name) {
-    obj.canvas = parent._$canvas
+    obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
     if (parent) {
       if (!name) {

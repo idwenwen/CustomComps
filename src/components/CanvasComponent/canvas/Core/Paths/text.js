@@ -13,12 +13,12 @@
 
 import { uuidSupport } from '@u'
 import COMMON from './common'
-import { rotate } from '../tools/animationsPreSet'
+import { rotate } from '../tools/translate'
 import Layer from '../Basic'
 
 const textComp = {
   drawText(obj, parent, name) {
-    obj.canvas = parent._$canvas
+    obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
     if (parent) {
       if (!name) {

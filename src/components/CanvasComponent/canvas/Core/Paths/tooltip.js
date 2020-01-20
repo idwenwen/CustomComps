@@ -20,6 +20,7 @@ import Text from './text'
 
 const tooltipComp = {
   drawTooltip(obj, parent, name) {
+    obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
     if (parent) {
       if (!name) {

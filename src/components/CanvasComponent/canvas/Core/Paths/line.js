@@ -12,7 +12,7 @@ import Layer from '../Basic'
 
 const lineComp = {
   drawLine(obj, parent, name) {
-    obj.canvas = parent._$canvas
+    obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
     if (parent) {
       if (!name) {

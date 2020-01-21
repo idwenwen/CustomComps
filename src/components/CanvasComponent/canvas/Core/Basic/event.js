@@ -73,7 +73,7 @@ export default function InitEvents(Layer) {
           lay._$event[val].push(function(propragation, ...props) {
             if (!propragation) return
             for (const key in lay._$children) {
-              lay._$children[key].emit(val)
+              lay._$children[key].emit(val, propragation, ...props)
             }
           })
           lay._$eventConnected[val] = true

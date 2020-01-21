@@ -1,11 +1,8 @@
 import { callHook } from './lifeCycle'
 
 export default function InitDrawing(Layer) {
-  Layer.prototype._InitDrawing = function() {
-    callHook.call(this, 'beforeDrawing')
-    if (!this._$parent) {
-      drawing.call(this)
-    }
+  Layer.prototype.drawing = function() {
+    drawing.call(this)
   }
 
   // Setting children layer
@@ -38,7 +35,10 @@ function drawing() {
   const lay = this
   const drawingList = []
   clearDrawing.call(lay)
-  lay._$path()
+  if (lay._$children.length === 0) {
+    callHook.call(this, 'beforeDrawing')
+    lay._$path()
+  }
   if (Object.getOwnPropertyNames(lay._$children).length > 0) {
     for (const key in lay._$children) {
       drawingList.push({ name: key, index: lay._$children[key].$zIndex })

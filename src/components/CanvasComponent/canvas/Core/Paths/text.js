@@ -38,18 +38,15 @@ const textComp = {
 function path() {
   debugger
   const lay = this
-  const ctx = lay.$ctx
-  const textInfo = measureText(ctx, lay.text, lay.style)
-  const finalWidth = (lay.width && textInfo.width > lay.width) ? lay.width : textInfo.width
-  const sin = Math.sin(lay.angle || 0)
-  const cos = Math.cos(lay.angle || 0)
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
+  const style = JSON.parse(JSON.stringify(lay.style))
+  style.textBaseline = COMMON.TEXTBASELINE
+  style.textAlign = 'left'
   if (lay.position === textComp.RIGHT) {
-    lay.point = { x: x - cos * finalWidth, y: y - sin * finalWidth }
+    style.textAlign = 'right'
   } else if (lay.position === textComp.CENTER) {
-    lay.point = { x: x - cos * finalWidth / 2, y: y - sin * finalWidth / 2 }
+    style.textAlign = 'center'
   }
+  lay.style = style
   text.call(this)
 }
 

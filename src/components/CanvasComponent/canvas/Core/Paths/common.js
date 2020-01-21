@@ -15,6 +15,7 @@ export default {
   RIGHT: 'RIGHT',
 
   BETWEEN_TEXT_LINE: 4, // 两行字体之间的间距
+  TEXTBASELINE: 'middle',
 
   TOLLTIP_TANGLE_SIZE: 5,
   TOLLTIP_BETWEEN: 5,

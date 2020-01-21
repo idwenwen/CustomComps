@@ -28,10 +28,22 @@ export default function InitOptions(Layer) {
   Layer.prototype.setData = function(obj) {
     const lay = this
     const add = {}
+    obj._times = obj._times || 1
+    obj._controlPoint = obj._controlPoint || { x: 0, y: 0 }
     for (const key in obj) {
       lay[key] ? (lay[key] = obj[key]) : (add[key] = obj[key])
     }
     initData.call(lay, add)
+  }
+
+  Layer.prototype.scale = function(times, point = { x: 0, y: 0 }) {
+    const lay = this
+    if (typeof times === 'object') {
+      lay._controlPoint = point
+    } else {
+      lay._times = times
+      lay._controlPoint = point
+    }
   }
 
   Layer.prototype.setPath = function(newPath) {

@@ -8,7 +8,6 @@ export default function Layer(obj) {
   const lay = this
   lay._InitLifeCycle(obj)
   lay._InitOptions(obj)
-  lay._InitDrawing(obj)
   lay._InitEvents(obj)
   lay._InitAnimation(obj)
 }

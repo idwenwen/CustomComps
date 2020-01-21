@@ -81,4 +81,16 @@ export function curve() {
   })
 }
 
+export function calculation(startP, endP, distance) {
+  const finalPoints = []
+  finalPoints.push(startP)
+  const sx = startP.x || startP[0]
+  const sy = startP.y || startP[1]
+  const ex = endP.x || endP[0]
+  const ey = endP.y || endP[1]
+  finalPoints.push({ x: sx, y: ey > sy ? sy + 0.25 * distance : sy - 0.25 * distance })
+  finalPoints.push({ x: ex, y: ey > sy ? ey - 0.25 * distance : ey + 0.25 * distance })
+  finalPoints.push(endP)
+}
+
 export default lineComp

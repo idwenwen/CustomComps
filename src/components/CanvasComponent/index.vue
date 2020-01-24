@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import Layer from './Core'
+import Layer from './canvas/Core'
 
 export default {
   name: 'Testing',

@@ -22,6 +22,7 @@ const rectComp = {
   drawRect(obj, parent, name) {
     obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
+    obj.translate = translate
     if (parent) {
       if (!name) {
         name = uuidSupport('rect')
@@ -40,6 +41,25 @@ const rectComp = {
   animation: {
 
   }
+}
+
+function translate() {
+  const lay = this
+  const controlPoint = lay._controlPoint
+  const times = lay._times
+  const x = lay.point.x || lay.point[0]
+  const y = lay.point.y || lay.point[1]
+  const cx = controlPoint.x || controlPoint[0]
+  const cy = controlPoint.y || controlPoint[1]
+  const bx = (x - cx) * times
+  const by = (y - cy) * times
+  const r = lay.radius || COMMON._RADIUS
+  lay.radius = r + times
+  lay.width = lay.width * times
+  lay.height = lay.height * times
+  lay.point = { x: cx + bx, y: cy + by }
+  lay._times = 1
+  lay._controlPoint = { x: 0, y: 0 }
 }
 
 function path() {

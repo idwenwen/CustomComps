@@ -21,7 +21,7 @@ const arcComp = {
   drawArc(obj, parent, name) {
     obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
-    obj.beforeDrawing = beforeDrawing
+    obj.translate = translate
     if (parent) {
       if (!name) {
         name = uuidSupport('arc')
@@ -38,7 +38,7 @@ const arcComp = {
   RIGHT_DOWM: COMMON.RIGHT_DOWM
 }
 
-function beforeDrawing() {
+function translate() {
   const lay = this
   const controlPoint = lay._controlPoint
   const times = lay._times

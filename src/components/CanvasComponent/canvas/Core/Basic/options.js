@@ -62,6 +62,11 @@ export default function InitOptions(Layer) {
     lay.$zIndex = zIndex
   }
 
+  Layer.prototype.setTranslate = function(translate) {
+    const lay = this
+    lay.$translate = translate
+  }
+
   // Setting Actual displaying-width
   Layer.prototype.setWidth = function(aw) {
     const lay = this
@@ -87,7 +92,7 @@ export default function InitOptions(Layer) {
     }
   }
 
-  Layer.prototype.setProps = function({ canvas, data = {}, path, clear = () => {}, zIndex = 0 }) {
+  Layer.prototype.setProps = function({ canvas, data = {}, path, clear = () => {}, zIndex = 0, translate }) {
     const lay = this
     lay.$metas = {}
     lay.setUUID()
@@ -96,6 +101,7 @@ export default function InitOptions(Layer) {
     lay.setPath(path)
     lay.setClear(clear)
     lay.setZIndex(zIndex)
+    lay.setTranslate(translate)
     lay.updated()
   }
 }

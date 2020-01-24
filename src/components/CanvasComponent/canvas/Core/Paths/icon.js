@@ -13,7 +13,7 @@ const arcComp = {
   drawIcon(obj, parent, name) {
     obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
-    obj.beforeDrawing = beforeDrawing
+    obj.translate = translate
     if (parent) {
       if (!name) {
         name = uuidSupport('icon')
@@ -26,7 +26,7 @@ const arcComp = {
   }
 }
 
-function beforeDrawing() {
+function translate() {
   const lay = this
   const controlPoint = lay._controlPoint
   const times = lay._times
@@ -39,6 +39,8 @@ function beforeDrawing() {
   lay.width = lay.width + times
   lay.height = (lay.height || lay.width) * times
   lay.point = { x: cx + bx, y: cy + by }
+  lay._times = 1
+  lay._controlPoint = { x: 0, y: 0 }
 }
 
 function path() {

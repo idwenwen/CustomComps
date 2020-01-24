@@ -2,6 +2,7 @@ import { callHook } from './lifeCycle'
 
 export default function InitDrawing(Layer) {
   Layer.prototype.drawing = function() {
+    callHook.call(this, 'beforeDrawing')
     drawing.call(this)
   }
 
@@ -36,7 +37,7 @@ function drawing() {
   const drawingList = []
   clearDrawing.call(lay)
   if (lay._$children.length === 0) {
-    callHook.call(this, 'beforeDrawing')
+    lay.$translate()
     lay._$path()
   }
   if (Object.getOwnPropertyNames(lay._$children).length > 0) {

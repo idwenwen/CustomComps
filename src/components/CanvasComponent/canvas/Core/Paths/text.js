@@ -20,6 +20,7 @@ const textComp = {
   drawText(obj, parent, name) {
     obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
+    obj.translate = translate
     if (parent) {
       if (!name) {
         name = uuidSupport('text')
@@ -33,6 +34,24 @@ const textComp = {
   LEFT: COMMON.LEFT,
   RIGHT: COMMON.RIGHT,
   CENTER: COMMON.CENTER
+}
+
+function translate() {
+  const lay = this
+  const controlPoint = lay._controlPoint
+  const times = lay._times
+  const x = lay.point.x || lay.point[0]
+  const y = lay.point.y || lay.point[1]
+  const cx = controlPoint.x || controlPoint[0]
+  const cy = controlPoint.y || controlPoint[1]
+  const bx = (x - cx) * times
+  const by = (y - cy) * times
+  lay.width = lay.width ? lay.width * times : 0
+  lay.height = lay.height ? lay.height * times : 0
+  lay.point = { x: cx + bx, y: cy + by }
+  lay.style.font && (lay.style.font.replace(parseInt(lay.style.font) + '', parseInt(lay.style.font) * times + ''))
+  lay._times = 1
+  lay._controlPoint = { x: 0, y: 0 }
 }
 
 function path() {

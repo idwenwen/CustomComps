@@ -30,10 +30,10 @@ function translate() {
   const lay = this
   const controlPoint = lay._controlPoint
   const times = lay._times
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
-  const cx = controlPoint.x || controlPoint[0]
-  const cy = controlPoint.y || controlPoint[1]
+  const x = lay.point.x || lay.point[0] || 0
+  const y = lay.point.y || lay.point[1] || 0
+  const cx = controlPoint.x || controlPoint[0] || 0
+  const cy = controlPoint.y || controlPoint[1] || 0
   const bx = (x - cx) * times
   const by = (y - cy) * times
   lay.width = lay.width + times
@@ -50,8 +50,8 @@ function path() {
 export function image(lay) {
   const ctx = lay.$ctx
   ctx.beginPath()
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
+  const x = lay.point.x || lay.point[0] || 0
+  const y = lay.point.y || lay.point[1] || 0
   const w = lay.width
   const h = lay.height || w
   ctx.drawImage(lay.img, x - w / 2, y - h / 2, w, h)

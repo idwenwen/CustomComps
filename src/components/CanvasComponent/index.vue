@@ -3,22 +3,20 @@
 </template>
 
 <script>
-import Layer from './canvas/Core'
-
+// import Layer from './canvas/Core'
+import Progress from './canvas/extra/progress'
 export default {
   name: 'Testing',
 
   data() {
     return {
-      style: {
-        fillStyle: 'rgba(255,165,0,0.8)'
-      },
-      textStyle: {
-        font: '12px arial'
-      },
-      text: '1234123412341234123412341234',
+      component: null,
+      choose: false,
+      disable: false,
+      type: Progress.type.RUNNING,
+      text: 'component-name',
       point: [200, 100],
-      width: 100,
+      width: 200,
       height: 40
     }
   },
@@ -29,20 +27,19 @@ export default {
 
   methods: {
     drawing() {
-      Layer.component.tooltip.drawTooltip({
+      this.component = Progress.drawProgress({
         canvas: document.getElementById('canvas'),
         data: {
           point: this.point,
+          choose: this.choose,
+          disable: this.disable,
           text: this.text,
-          // breakLine: this.breakLine,
-          containerStyle: this.style,
-          textStyle: this.textStyle,
-          width: this.width,
-          // angle: this.angle
+          type: this.type,
           height: this.height,
-          showing: true
+          width: this.width
         }
       })
+      this.component.drawing()
     }
   }
 }

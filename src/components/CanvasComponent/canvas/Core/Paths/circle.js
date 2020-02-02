@@ -42,10 +42,10 @@ function translate() {
   const lay = this
   const controlPoint = lay._controlPoint
   const times = lay._times
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
-  const cx = controlPoint.x || controlPoint[0]
-  const cy = controlPoint.y || controlPoint[1]
+  const x = lay.point.x || lay.point[0] || 0
+  const y = lay.point.y || lay.point[1] || 0
+  const cx = controlPoint.x || controlPoint[0] || 0
+  const cy = controlPoint.y || controlPoint[1] || 0
   const r = lay.radius || COMMON._RADIUS
   lay.radius = r + times
   const bx = (x - cx) * times
@@ -57,8 +57,8 @@ function translate() {
 
 function path() {
   const lay = this
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
+  const x = lay.point.x || lay.point[0] || 0
+  const y = lay.point.y || lay.point[1] || 0
   const r = lay.radius
   if (lay.position === arcComp.LEFT_UP) {
     lay.point = { x: x + r, y: y + r }
@@ -72,8 +72,8 @@ function path() {
 
 export function arc(lay) {
   const basicPath = (ctx) => {
-    const x = lay.point.x || lay.point[0]
-    const y = lay.point.y || lay.point[1]
+    const x = lay.point.x || lay.point[0] || 0
+    const y = lay.point.y || lay.point[1] || 0
     const r = lay.radius
     const sAngle = lay.sAngle || COMMON._SANGLE
     const eAngle = lay.eAngle || COMMON._EANGLE

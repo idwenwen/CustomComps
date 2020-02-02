@@ -19,6 +19,7 @@ const trangleComp = {
   drawTrangle(obj, parent, name) {
     obj.canvas = parent ? parent._$canvas : obj.canvas
     obj.path = path
+    obj.translate = translate
     if (parent) {
       if (!name) {
         name = uuidSupport('trangle')
@@ -35,6 +36,34 @@ const trangleComp = {
   BOTTOM: COMMON.BOTTOM
 }
 
+function translate() {
+  const lay = this
+  const controlPoint = lay._controlPoint
+  const times = lay._times
+  const cx = controlPoint.x || controlPoint[0] || 0
+  const cy = controlPoint.y || controlPoint[1] || 0
+  if (lay.height) {
+    const x = lay.point.x || lay.point[0] || 0
+    const y = lay.point.y || lay.point[1] || 0
+    const bx = (x - cx) * times
+    const by = (y - cy) * times
+    lay.height = lay.height ? lay.height * times : 0
+    lay.point = { x: cx + bx, y: cy + by }
+  } else {
+    const finalPoint = []
+    for (const val of lay.point) {
+      const x = val.x.toString() || val[0] || 0
+      const y = val.y.toString() || val[1] || 0
+      const bx = (x - cx) * times
+      const by = (y - cy) * times
+      finalPoint.push({ x: cx + bx, y: cy + by })
+    }
+    lay.point = finalPoint
+  }
+  lay._times = 1
+  lay._controlPoint = { x: 0, y: 0 }
+}
+
 function path() {
   if (this.height) {
     equTrangle.call(this)
@@ -48,8 +77,8 @@ export function trangle() {
   const basicPath = (ctx) => {
     let index = 0
     for (const val of lay.point) {
-      const x = val.x || val[0]
-      const y = val.y || val[1]
+      const x = val.x || val[0] || 0
+      const y = val.y || val[1] || 0
       if (index === 0) {
         ctx.moveTo(x, y)
       } else {
@@ -57,8 +86,8 @@ export function trangle() {
       }
       index++
     }
-    const ex = lay.point[0].x || lay.point[0][0]
-    const ey = lay.point[0].y || lay.point[0][1]
+    const ex = lay.point[0].x || lay.point[0][0] || 0
+    const ey = lay.point[0].y || lay.point[0][1] || 0
     ctx.lineTo(ex, ey)
   }
   commonDrawing(lay, basicPath)
@@ -70,8 +99,8 @@ export function equTrangle() {
     const tan = Math.tan(30 * Math.PI / 180)
     const between = tan * lay.height
     const points = []
-    const x = lay.point.x || lay.point[0]
-    const y = lay.point.y || lay.point[1]
+    const x = lay.point.x || lay.point[0] || 0
+    const y = lay.point.y || lay.point[1] || 0
     points.push(lay.point)
     if (lay.position === trangleComp.LEFT) {
       points.push(...[
@@ -96,8 +125,8 @@ export function equTrangle() {
     }
     let index = 0
     for (const val of points) {
-      const x = val.x || val[0]
-      const y = val.y || val[1]
+      const x = val.x || val[0] || 0
+      const y = val.y || val[1] || 0
       if (index === 0) {
         ctx.moveTo(x, y)
       } else {
@@ -105,8 +134,8 @@ export function equTrangle() {
       }
       index++
     }
-    const ex = points[0].x || points[0][0]
-    const ey = points[0].y || points[0][1]
+    const ex = lay.point.x || lay.point[0] || 0
+    const ey = lay.point.y || lay.point[1] || 0
     ctx.lineTo(ex, ey)
   }
   commonDrawing(lay, basicPath)

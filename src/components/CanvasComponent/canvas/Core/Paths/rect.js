@@ -36,25 +36,22 @@ const rectComp = {
   LEFT_UP: COMMON.LEFT_UP,
   RIGHT_UP: COMMON.RIGHT_UP,
   LEFT_DOWN: COMMON.LEFT_DOWN,
-  RIGHT_DOWM: COMMON.RIGHT_DOWM,
-  CENTER: COMMON.CENTER,
-  animation: {
-
-  }
+  RIGHT_DOWN: COMMON.RIGHT_DOWN,
+  CENTER: COMMON.CENTER
 }
 
 function translate() {
   const lay = this
   const controlPoint = lay._controlPoint
   const times = lay._times
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
-  const cx = controlPoint.x || controlPoint[0]
-  const cy = controlPoint.y || controlPoint[1]
+  const x = lay.point.x || lay.point[0] || 0
+  const y = lay.point.y || lay.point[1] || 0
+  const cx = controlPoint.x || controlPoint[0] || 0
+  const cy = controlPoint.y || controlPoint[1] || 0
   const bx = (x - cx) * times
   const by = (y - cy) * times
   const r = lay.radius || COMMON._RADIUS
-  lay.radius = r + times
+  lay.radius = r * times
   lay.width = lay.width * times
   lay.height = lay.height * times
   lay.point = { x: cx + bx, y: cy + by }
@@ -64,8 +61,8 @@ function translate() {
 
 function path() {
   const lay = this
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
+  const x = lay.point.x || lay.point[0] || 0
+  const y = lay.point.y || lay.point[1] || 0
   const w = lay.width
   const h = lay.height
   if (lay.position === rectComp.LEFT_UP) {
@@ -74,7 +71,7 @@ function path() {
     lay.point = { x: x - w / 2, y: y + h / 2 }
   } else if (lay.position === rectComp.LEFT_DOWN) {
     lay.point = { x: x + w / 2, y: y - h / 2 }
-  } else if (lay.position === rectComp.RIGHT_DOWM) {
+  } else if (lay.position === rectComp.RIGHT_DOWN) {
     lay.point = { x: x - w / 2, y: y - h / 2 }
   }
   rect.call(lay)
@@ -83,8 +80,8 @@ function path() {
 export function rect() {
   const lay = this
   const basicPath = (ctx) => {
-    const x = lay.point.x || lay.point[0]
-    const y = lay.point.y || lay.point[1]
+    const x = lay.point.x || lay.point[0] || 0
+    const y = lay.point.y || lay.point[1] || 0
     const r = lay.radius || COMMON._RADIUS
     const w = lay.width
     const h = lay.height

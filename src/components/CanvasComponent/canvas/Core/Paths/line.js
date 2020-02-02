@@ -41,8 +41,8 @@ export function brokeLine() {
   const ctx = lay.$ctx
   stroke(ctx, lay.style, (ctx) => {
     for (let i = 0; i < lay.point.length; i++) {
-      const x = lay.point[i].x || lay.point[i][0]
-      const y = lay.point[i].y || lay.point[i][1]
+      const x = lay.point[i].x || lay.point[i][0] || 0
+      const y = lay.point[i].y || lay.point[i][1] || 0
       if (i === 0) {
         ctx.moveTo(x, y)
       } else {
@@ -57,8 +57,8 @@ export function curve() {
   const ctx = lay.$ctx
   stroke(ctx, lay.style, (ctx) => {
     for (let i = 0; i < lay.point.length; i++) {
-      const x = lay.point[i].x || lay.point[i][0]
-      const y = lay.point[i].y || lay.point[i][1]
+      const x = lay.point[i].x || lay.point[i][0] || 0
+      const y = lay.point[i].y || lay.point[i][1] || 0
       if (i === 0) {
         ctx.moveTo(x, y)
       } else {
@@ -84,10 +84,10 @@ export function curve() {
 export function calculation(startP, endP, distance) {
   const finalPoints = []
   finalPoints.push(startP)
-  const sx = startP.x || startP[0]
-  const sy = startP.y || startP[1]
-  const ex = endP.x || endP[0]
-  const ey = endP.y || endP[1]
+  const sx = startP.x || startP[0] || 0
+  const sy = startP.y || startP[1] || 0
+  const ex = endP.x || endP[0] || 0
+  const ey = endP.y || endP[1] || 0
   finalPoints.push({ x: sx, y: ey > sy ? sy + 0.25 * distance : sy - 0.25 * distance })
   finalPoints.push({ x: ex, y: ey > sy ? ey - 0.25 * distance : ey + 0.25 * distance })
   finalPoints.push(endP)

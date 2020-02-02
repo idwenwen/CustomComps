@@ -17,9 +17,22 @@ export function rotate(ctx, center, angle) {
  *    time: number | 100
  * }
  */
-export function fromTo(lay, name, changes) {
+export function fromTo(lay, name, changes, repeat = false) {
   const animationList = []
   for (const key in changes) {
+    // get origin data
+    const keys = typeof key === 'string' ? key.split('.') : [key]
+    let rootObj = null
+    let option = null
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (i === 0) {
+        rootObj = JSON.parse(JSON.stringify(lay[keys[i]]))
+        option = rootObj
+      } else {
+        option = option[keys[i]]
+      }
+    }
+    const origin = option[keys[keys.length - 1]]
     animationList.push({
       operation: () => {
         const keys = typeof key === 'string' ? key.split('.') : [key]
@@ -33,16 +46,21 @@ export function fromTo(lay, name, changes) {
             option = option[keys[i]]
           }
         }
-        if (typeof changes[key].operation === 'function') {
-          option[keys[keys.length - 1]] = changes[key].operation(option[keys[keys.length - 1]])
-        } else if (typeof changes[key].to === 'number') {
-          option[keys[keys.length - 1]] = option[keys[keys.length - 1]]
-        } else if (changes[key].to.match(/(rba|rgba|#([a-z]|[A-Z]|[0-9]){6})/)) {
-          option[keys[keys.length - 1]] = gradual(option[keys[keys.length - 1]], changes[key].to, changes[key].between)
-        }
-        lay[keys[0]] = rootObj
         if (option[keys[keys.length - 1]] === changes[key].to) {
-          return false
+          if (repeat) {
+            lay[keys[0]] = origin
+          } else {
+            return false
+          }
+        } else {
+          if (typeof changes[key].operation === 'function') {
+            option[keys[keys.length - 1]] = changes[key].operation(option[keys[keys.length - 1]])
+          } else if (typeof changes[key].to === 'number') {
+            option[keys[keys.length - 1]] = option[keys[keys.length - 1]]
+          } else if (changes[key].to.match(/(rba|rgba|#([a-z]|[A-Z]|[0-9]){6})/)) {
+            option[keys[keys.length - 1]] = graduale(option[keys[keys.length - 1]], changes[key].to, changes[key].between)
+          }
+          lay[keys[0]] = rootObj
         }
       },
       time: changes[key].time || 100
@@ -51,7 +69,7 @@ export function fromTo(lay, name, changes) {
   lay.addAniamtion(name, animationList)
 }
 
-export function gradual(from, to, search) {
+export function graduale(from, to, search) {
   const fromColor = toRGBA(from).replace('rgba(', '').replace(')', '').split(',')
   const toColor = toRGBA(to).replace('rgba(', '').replace(')', '').split(',')
   const final = []
@@ -85,4 +103,11 @@ export function gradual(from, to, search) {
     }
   }
   return 'rgba(' + final.join(',') + ')'
+}
+
+/**
+ * chain: [changes]
+ */
+export function chainAnimation(lay, name, chains) {
+
 }

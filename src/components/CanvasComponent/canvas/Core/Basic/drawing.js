@@ -35,27 +35,34 @@ export default function InitDrawing(Layer) {
 function drawing() {
   const lay = this
   const drawingList = []
-  clearDrawing.call(lay)
-  if (lay._$children.length === 0) {
-    lay.$translate()
-    lay._$path()
-  }
-  if (Object.getOwnPropertyNames(lay._$children).length > 0) {
-    for (const key in lay._$children) {
-      drawingList.push({ name: key, index: lay._$children[key].$zIndex })
+  if (lay._$updated) {
+    clearDrawing.call(lay)
+    let props = Object.getOwnPropertyNames(lay._$children)
+    if (props.length === 0 || props[0] === '__ob__') { // It is empty or just have __ob__ property in vue
+      typeof lay.$translate === 'function' && lay.$translate()
+      lay._$path()
     }
-    drawingList.sort((a, b) => {
-      if (a.index < b.index) {
-        return -1
-      } else if (a.index > b.index) {
-        return 1
-      } else {
-        return 0
+    props = Object.getOwnPropertyNames(lay._$children)
+    if ((props.length >= 2) || (props.length === 1 && props[0] !== '__ob__')) {
+      if (lay.$visable) {
+        for (const key in lay._$children) {
+          drawingList.push({ name: key, index: lay._$children[key].$zIndex })
+        }
+        drawingList.sort((a, b) => {
+          if (a.index < b.index) {
+            return -1
+          } else if (a.index > b.index) {
+            return 1
+          } else {
+            return 0
+          }
+        })
+        for (const val of drawingList) {
+          drawing.call(lay._$children[val.name])
+        }
       }
-    })
-    for (const val of drawingList) {
-      drawing.call(lay._$children[val.name])
     }
+    lay._$updated = false
   }
 }
 

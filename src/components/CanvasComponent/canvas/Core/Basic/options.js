@@ -67,6 +67,22 @@ export default function InitOptions(Layer) {
     lay.$translate = translate
   }
 
+  Layer.prototype.setTimes = function(times) {
+    const lay = this
+    lay._times = times
+    for (const key in lay._$children) {
+      lay._$children[key].setTimes(times)
+    }
+  }
+
+  Layer.prototype.setControlPoint = function(point) {
+    const lay = this
+    lay._controlPoint = point
+    for (const key in lay._$children) {
+      lay._$children[key].setControlPoint(point)
+    }
+  }
+
   // Setting Actual displaying-width
   Layer.prototype.setWidth = function(aw) {
     const lay = this
@@ -92,9 +108,10 @@ export default function InitOptions(Layer) {
     }
   }
 
-  Layer.prototype.setProps = function({ canvas, data = {}, path, clear = () => {}, zIndex = 0, translate }) {
+  Layer.prototype.setProps = function({ canvas, data = {}, path, clear = () => {}, zIndex = 0, translate, visable = true }) {
     const lay = this
     lay.$metas = {}
+    lay.$visable = visable
     lay.setUUID()
     lay.setCanvas(canvas)
     lay.setData(data)

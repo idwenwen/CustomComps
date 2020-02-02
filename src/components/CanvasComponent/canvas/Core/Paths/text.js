@@ -40,22 +40,22 @@ function translate() {
   const lay = this
   const controlPoint = lay._controlPoint
   const times = lay._times
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
-  const cx = controlPoint.x || controlPoint[0]
-  const cy = controlPoint.y || controlPoint[1]
+  const x = lay.point.x || lay.point[0] || 0
+  const y = lay.point.y || lay.point[1] || 0
+  const cx = controlPoint.x || controlPoint[0] || 0
+  const cy = controlPoint.y || controlPoint[1] || 0
   const bx = (x - cx) * times
   const by = (y - cy) * times
+  lay.style = lay.style || { font: COMMON.TEXTFONT + 'px ' + COMMON.TEXTFAMILY }
   lay.width = lay.width ? lay.width * times : 0
   lay.height = lay.height ? lay.height * times : 0
   lay.point = { x: cx + bx, y: cy + by }
-  lay.style.font && (lay.style.font.replace(parseInt(lay.style.font) + '', parseInt(lay.style.font) * times + ''))
+  if (lay.style.font) lay.style.font = (lay.style.font.replace(parseInt(lay.style.font) + '', parseInt(lay.style.font) * times + ''))
   lay._times = 1
   lay._controlPoint = { x: 0, y: 0 }
 }
 
 function path() {
-  debugger
   const lay = this
   const style = JSON.parse(JSON.stringify(lay.style))
   style.textBaseline = COMMON.TEXTBASELINE
@@ -73,7 +73,7 @@ export function text() {
   const lay = this
   const ctx = lay.$ctx
   const textInfo = measureText(ctx, lay.text, lay.style)
-  const lineWidth = lay.width || parseInt(textInfo.width)
+  const lineWidth = lay.width || Math.ceil(textInfo.width)
   const lineHeight = parseInt(lay.style.font)
   const breakLine = lay.breakLine
     ? (lay.height
@@ -86,8 +86,8 @@ export function text() {
     ? Math.ceil(parseInt(textInfo.width) / lay.width)
     : breakLine
   const overFlow = finalLine * lineWidth < parseInt(textInfo.width)
-  const x = lay.point.x || lay.point[0]
-  const y = lay.point.y || lay.point[1]
+  const x = lay.point.x || lay.point[0] || 0
+  const y = lay.point.y || lay.point[1] || 0
   const lines = []
   let pos = 0
   for (let i = 0; i < finalLine; i++) {

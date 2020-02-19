@@ -1,10 +1,23 @@
-function clone(obj) {
+export function clone(obj) {
   if (typeof obj === 'object') {
     return JSON.parse(JSON.stringify(obj))
   }
+  return obj
 }
 
-function fontToPx(size, el) {
+export function deepClone(obj) {
+  var newObj = {}
+  if (obj instanceof Array) {
+    newObj = []
+  }
+  for (var key in obj) {
+    var val = obj[key]
+    newObj[key] = typeof val === 'object' ? deepClone(val) : val
+  }
+  return newObj
+}
+
+export function fontToPx(size, el) {
   if (size.match(/rem$/)) {
     return parseInt(getComputedStyle(document.getElementsByTagName('html')[0]).fontSize) * parseFloat(size) + 'px'
   } else if (size.match(/px$/)) {
@@ -16,7 +29,7 @@ function fontToPx(size, el) {
   }
 }
 
-function getActualFontSize(txt, fontsize, fontname) {
+export function getActualFontSize(txt, fontsize, fontname) {
   let canvas = document.getElementById('__for_calculate_canvas')
   if (!canvas) {
     canvas = document.createElement('canvas')
@@ -29,7 +42,7 @@ function getActualFontSize(txt, fontsize, fontname) {
   return ctx.measureText(txt).width
 }
 
-function colorRgb(color, opacity) {
+export function colorRgb(color, opacity) {
   let sColor = color.toLowerCase()
   const reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/
   if (sColor && reg.test(sColor)) {
@@ -49,7 +62,7 @@ function colorRgb(color, opacity) {
   return sColor
 }
 
-function mergeObj(...obj) {
+export function mergeObj(...obj) {
   const final = {}
   if (obj.length >= 1) {
     for (const val of obj) {
@@ -61,11 +74,9 @@ function mergeObj(...obj) {
   return final
 }
 
-function uuidSupport(sub) {
+export function uuidSupport(sub) {
   const now = new Date().getTime().toString().substr(-7)
   let rand = Math.round(Math.random() * 1000).toString()
   rand = new Array(3 - rand.length).fill(0).join('') + rand
   return sub + '_' + now + rand
 }
-
-export { clone, fontToPx, getActualFontSize, colorRgb, mergeObj, uuidSupport }

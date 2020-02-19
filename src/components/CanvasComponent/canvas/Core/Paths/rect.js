@@ -13,19 +13,17 @@
  * }
  */
 
-import { uuidSupport } from '@u'
 import COMMON from './common'
-import { commonDrawing } from '../tools'
 import Layer from '../Basic'
 
 const rectComp = {
   drawRect(obj, parent, name) {
-    obj.canvas = parent ? parent._$canvas : obj.canvas
+    obj.canvas = parent ? parent.$canvas : obj.canvas
     obj.path = path
-    obj.translate = translate
+    obj.here = here
     if (parent) {
       if (!name) {
-        name = uuidSupport('rect')
+        name = Layer.getUUID('rect')
       }
       parent.drawLayer(name, obj)
       return name
@@ -40,23 +38,35 @@ const rectComp = {
   CENTER: COMMON.CENTER
 }
 
-function translate() {
+function here(point) {
   const lay = this
-  const controlPoint = lay._controlPoint
-  const times = lay._times
+  // const translate = lay.$meta.get('$tranlsate') || { x: 0, y: 0 }
   const x = lay.point.x || lay.point[0] || 0
   const y = lay.point.y || lay.point[1] || 0
-  const cx = controlPoint.x || controlPoint[0] || 0
-  const cy = controlPoint.y || controlPoint[1] || 0
-  const bx = (x - cx) * times
-  const by = (y - cy) * times
-  const r = lay.radius || COMMON._RADIUS
-  lay.radius = r * times
-  lay.width = lay.width * times
-  lay.height = lay.height * times
-  lay.point = { x: cx + bx, y: cy + by }
-  lay._times = 1
-  lay._controlPoint = { x: 0, y: 0 }
+  const w = lay.width
+  const h = lay.height
+  let p = {}
+  if (lay.position === rectComp.LEFT_UP) {
+    p = { x: x + w / 2, y: y + h / 2 }
+  } else if (lay.position === rectComp.RIGHT_UP) {
+    p = { x: x - w / 2, y: y + h / 2 }
+  } else if (lay.position === rectComp.LEFT_DOWN) {
+    p = { x: x + w / 2, y: y - h / 2 }
+  } else if (lay.position === rectComp.RIGHT_DOWN) {
+    p = { x: x - w / 2, y: y - h / 2 }
+  } else {
+    p = { x, y }
+  }
+  const trans = lay.$meta.get('$translate') || { x: 0, y: 0 }
+  const operax = (point.x || point[0] || 0) - trans.x
+  const operay = (point.y || point[1] || 0) - trans.y
+  if (operax >= p.x - w / 2 &&
+    operax <= p.x + w / 2 &&
+    operay >= p.y - h / 2 &&
+    operay <= p.y + h / 2) {
+    return true
+  }
+  return false
 }
 
 function path() {
@@ -82,10 +92,10 @@ export function rect() {
   const basicPath = (ctx) => {
     const x = lay.point.x || lay.point[0] || 0
     const y = lay.point.y || lay.point[1] || 0
-    const r = lay.radius || COMMON._RADIUS
+    const r = lay.radius
     const w = lay.width
     const h = lay.height
-    const p = lay.progress || 1
+    const p = lay.progress === 0 ? 0 : lay.progress ? lay.progress : 1
 
     if (p <= 0) {
       return
@@ -150,7 +160,7 @@ export function rect() {
     nextY = y - h / 2 + r
     ctx.lineTo(nextX, nextY)
   }
-  commonDrawing(lay, basicPath)
+  Layer.commonDrawing(lay, basicPath)
 }
 
 export default rectComp

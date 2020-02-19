@@ -14,10 +14,8 @@ export default {
   LEFT: 'LEFT',
   RIGHT: 'RIGHT',
 
-  BETWEEN_TEXT_LINE: 4, // 两行字体之间的间距
-  TEXTBASELINE: 'alphabetic',
-  TEXTFONT: 16,
-  TEXTFAMILY: 'arial',
+  TEXTBASELINE: 'middle',
+  TEXTFAMILY: 'Lato',
 
   TOLLTIP_TANGLE_SIZE: 5,
   TOLLTIP_BETWEEN: 5,

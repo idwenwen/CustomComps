@@ -10,19 +10,16 @@
  * }
  */
 
-import { uuidSupport } from '@u'
 import Layer from '../Basic'
 import COMMON from './common'
-import { commonDrawing } from '../tools'
 
 const trangleComp = {
   drawTrangle(obj, parent, name) {
-    obj.canvas = parent ? parent._$canvas : obj.canvas
+    obj.canvas = parent ? parent.$canvas : obj.canvas
     obj.path = path
-    obj.translate = translate
     if (parent) {
       if (!name) {
-        name = uuidSupport('trangle')
+        name = Layer.getUUID('trangle')
       }
       parent.drawLayer(name, obj)
       return name
@@ -34,34 +31,6 @@ const trangleComp = {
   RIGHT: COMMON.RIGHT,
   UP: COMMON.CENTER,
   BOTTOM: COMMON.BOTTOM
-}
-
-function translate() {
-  const lay = this
-  const controlPoint = lay._controlPoint
-  const times = lay._times
-  const cx = controlPoint.x || controlPoint[0] || 0
-  const cy = controlPoint.y || controlPoint[1] || 0
-  if (lay.height) {
-    const x = lay.point.x || lay.point[0] || 0
-    const y = lay.point.y || lay.point[1] || 0
-    const bx = (x - cx) * times
-    const by = (y - cy) * times
-    lay.height = lay.height ? lay.height * times : 0
-    lay.point = { x: cx + bx, y: cy + by }
-  } else {
-    const finalPoint = []
-    for (const val of lay.point) {
-      const x = val.x.toString() || val[0] || 0
-      const y = val.y.toString() || val[1] || 0
-      const bx = (x - cx) * times
-      const by = (y - cy) * times
-      finalPoint.push({ x: cx + bx, y: cy + by })
-    }
-    lay.point = finalPoint
-  }
-  lay._times = 1
-  lay._controlPoint = { x: 0, y: 0 }
 }
 
 function path() {
@@ -90,7 +59,7 @@ export function trangle() {
     const ey = lay.point[0].y || lay.point[0][1] || 0
     ctx.lineTo(ex, ey)
   }
-  commonDrawing(lay, basicPath)
+  Layer.commonDrawing(lay, basicPath)
 }
 
 export function equTrangle() {
@@ -138,7 +107,7 @@ export function equTrangle() {
     const ey = lay.point.y || lay.point[1] || 0
     ctx.lineTo(ex, ey)
   }
-  commonDrawing(lay, basicPath)
+  Layer.commonDrawing(lay, basicPath)
 }
 
 export default trangleComp

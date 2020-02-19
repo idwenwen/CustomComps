@@ -6,17 +6,15 @@
  *  stroke: boolean
  * }
  */
-import { uuidSupport } from '@u'
-import { stroke } from '../tools'
 import Layer from '../Basic'
 
 const lineComp = {
   drawLine(obj, parent, name) {
-    obj.canvas = parent ? parent._$canvas : obj.canvas
+    obj.canvas = parent ? parent.$canvas : obj.canvas
     obj.path = path
     if (parent) {
       if (!name) {
-        name = uuidSupport('line')
+        name = Layer.getUUID('line')
       }
       parent.drawLayer(name, obj)
       return name
@@ -29,7 +27,7 @@ const lineComp = {
 // path for line-drawing component
 function path() {
   const lay = this
-  if (lay.curve || lay.point.length <= 2) {
+  if (!lay.curve || lay.point.length <= 2) {
     brokeLine.call(this)
   } else {
     curve.call(this)
@@ -39,7 +37,7 @@ function path() {
 export function brokeLine() {
   const lay = this
   const ctx = lay.$ctx
-  stroke(ctx, lay.style, (ctx) => {
+  Layer.stroke(ctx, lay.style, (ctx) => {
     for (let i = 0; i < lay.point.length; i++) {
       const x = lay.point[i].x || lay.point[i][0] || 0
       const y = lay.point[i].y || lay.point[i][1] || 0
@@ -55,7 +53,7 @@ export function brokeLine() {
 export function curve() {
   const lay = this
   const ctx = lay.$ctx
-  stroke(ctx, lay.style, (ctx) => {
+  Layer.stroke(ctx, lay.style, (ctx) => {
     for (let i = 0; i < lay.point.length; i++) {
       const x = lay.point[i].x || lay.point[i][0] || 0
       const y = lay.point[i].y || lay.point[i][1] || 0
@@ -91,6 +89,7 @@ export function calculation(startP, endP, distance) {
   finalPoints.push({ x: sx, y: ey > sy ? sy + 0.25 * distance : sy - 0.25 * distance })
   finalPoints.push({ x: ex, y: ey > sy ? ey - 0.25 * distance : ey + 0.25 * distance })
   finalPoints.push(endP)
+  return finalPoints
 }
 
 export default lineComp

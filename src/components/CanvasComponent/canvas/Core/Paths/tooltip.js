@@ -2,30 +2,35 @@
  * state: {
  *  point: {x, y},
  *  position: enum,
- *  text: String,
+ *  text: [String],
+ *  textPosition: enum
+ *  lineBetween: Number
+ *  padding: Number,
+ *
+ *  trangleSize: Number,
+ *  radius: Number,
+ *
  *  containerStyle: {},
  *  textStyle: {}
- *  width: Number,
- *  height: Number,
- *  showing: Boolean
  * }
  */
 
-import { uuidSupport } from '@u'
 import COMMON from './common'
 import Layer from '../Basic'
 import Trangle from './trangle'
 import Rect from './rect'
 import Text, { measureText } from './text'
 
+const LINE_BETWEEN = 5
+
 const tooltipComp = {
   drawTooltip(obj, parent, name) {
-    obj.canvas = parent ? parent._$canvas : obj.canvas
-    obj.path = path
-    obj.translate = translate
+    obj.canvas = parent ? parent.$canvas : obj.canvas
+    obj.struct = struct
+    obj.here = here
     if (parent) {
       if (!name) {
-        name = uuidSupport('tooltip')
+        name = Layer.getUUID('tooltip')
       }
       parent.drawLayer(name, obj)
       return name
@@ -33,92 +38,109 @@ const tooltipComp = {
       return new Layer(obj)
     }
   },
+  here,
   LEFT: COMMON.LEFT,
   RIGHT: COMMON.RIGHT,
   UP: COMMON.CENTER,
-  BOTTOM: COMMON.BOTTOM
+  BOTTOM: COMMON.BOTTOM,
+  TEXT: {
+    LEFT: Text.LEFT,
+    RIGHT: Text.RIGHT,
+    CENTER: Text.CENTER
+  },
+  events: {
+    scale: function(time, point = { x: 0, y: 0 }) {
+      const lay = this
+      lay.setCus('scale', () => {
+        lay.point = Layer.scaleDistanceForPoint(lay.point, point, time)
+        if (lay.width) lay.width = Layer.toFixed(lay.width * time)
+        if (lay.height) lay.height = Layer.toFixed(lay.height * time)
+        if (lay.padding) lay.padding = Layer.toFixed(lay.padding * time)
+        if (lay.trangleSize) lay.trangleSize = Layer.toFixed(lay.trangleSize * time)
+        if (lay.textStyle.font) {
+          const n = parseFloat(lay.textStyle.font)
+          lay.textStyle.font = lay.textStyle.font.replace(
+            n, Layer.toFixed(n * time))
+        }
+        lay.linebetween = Layer.toFixed(lay.linebetween * time)
+        lay.radius = Layer.toFixed((lay.radius || 4) * time)
+      })
+    }
+  }
 }
 
-function translate() {
-  const lay = this
-  const controlPoint = lay._controlPoint
-  const times = lay._times
-  const x = lay.point.x || lay.point[0] || 0
-  const y = lay.point.y || lay.point[1] || 0
-  const cx = controlPoint.x || controlPoint[0] || 0
-  const cy = controlPoint.y || controlPoint[1] || 0
-  const bx = (x - cx) * times
-  const by = (y - cy) * times
-  lay.width = lay.width ? lay.width * times : 0
-  lay.height = lay.height ? lay.height * times : 0
-  if (lay.textStyle.font) lay.textStyle.font = (lay.textStyle.font.replace(parseInt(lay.textStyle.font) + '', parseInt(lay.textStyle.font) * times + ''))
-  lay.point = { x: cx + bx, y: cy + by }
-  lay._times = 1
-  lay._controlPoint = { x: 0, y: 0 }
+function here(point) {
+  return false
 }
 
-function path() {
+function struct() {
   const lay = this
-  const times = lay._times
+  lay.linebetween = lay.linebetween || LINE_BETWEEN
   const x = lay.point.x || lay.point[0] || 0
   const y = lay.point.y || lay.point[1] || 0
-  const tranglePoint = {}
+  const tranglePoint = { x, y }
   const contentPoint = {}
-  const info = measureText(lay.$ctx, lay.text, lay.textStyle)
-  let contentHeight = lay.height || parseInt(lay.textStyle.font) + COMMON.TOLLTIP_PADDING * times
-  let contentWidth = lay.width || Math.ceil(info.width) + COMMON.TOLLTIP_PADDING * times
+  let widthest = 0
+  lay.text = Array.isArray(lay.text) ? lay.text : [lay.text]
+  for (const item of lay.text) {
+    const info = measureText(lay.$ctx, item, lay.textStyle)
+    if (Math.ceil(info.width) > widthest) {
+      widthest = Math.ceil(info.width)
+    }
+  }
+  const contentHeight = parseInt(lay.textStyle.font) * lay.text.length + lay.linebetween * (lay.text.length - 1) + lay.padding * 1.5
+  const contentWidth = widthest + lay.padding * 2
   if (lay.position === tooltipComp.RIGHT) {
-    tranglePoint.x = x - COMMON.TOLLTIP_BETWEEN * times
-    tranglePoint.y = y
-    contentPoint.x = x - COMMON.TOLLTIP_BETWEEN * times - COMMON.TOLLTIP_TANGLE_SIZE * times - (contentWidth - COMMON.TOLLTIP_TANGLE_SIZE * times) / 2
+    contentPoint.x = x - lay.trangleSize - contentWidth / 2
     contentPoint.y = y
-    contentWidth -= COMMON.TOLLTIP_TANGLE_SIZE * times
   } else if (lay.position === tooltipComp.UP) {
-    tranglePoint.x = x
-    tranglePoint.y = y + COMMON.TOLLTIP_BETWEEN * times
     contentPoint.x = x
-    contentPoint.y = y + COMMON.TOLLTIP_BETWEEN * times + COMMON.TOLLTIP_TANGLE_SIZE * times + (contentHeight - COMMON.TOLLTIP_TANGLE_SIZE * times) / 2
-    contentHeight -= COMMON.TOLLTIP_TANGLE_SIZE * times
+    contentPoint.y = y + lay.trangleSize + contentHeight / 2
   } else if (lay.position === tooltipComp.BOTTOM) {
-    tranglePoint.x = x
-    tranglePoint.y = y - COMMON.TOLLTIP_BETWEEN * times
     contentPoint.x = x
-    contentPoint.y = y - COMMON.TOLLTIP_BETWEEN * times - COMMON.TOLLTIP_TANGLE_SIZE * times - (contentHeight - COMMON.TOLLTIP_TANGLE_SIZE * times) / 2
-    contentHeight -= COMMON.TOLLTIP_TANGLE_SIZE * times
+    contentPoint.y = y - lay.trangleSize - contentHeight / 2
   } else {
-    tranglePoint.x = x + COMMON.TOLLTIP_BETWEEN * times
-    tranglePoint.y = y
-    contentPoint.x = x + COMMON.TOLLTIP_BETWEEN * times + COMMON.TOLLTIP_TANGLE_SIZE * times + (contentWidth - COMMON.TOLLTIP_TANGLE_SIZE * times) / 2
+    contentPoint.x = x + lay.trangleSize + contentWidth / 2
     contentPoint.y = y
-    contentWidth -= COMMON.TOLLTIP_TANGLE_SIZE * times
   }
   Trangle.drawTrangle({
-    data: {
+    props: {
       point: tranglePoint,
-      height: COMMON.TOLLTIP_TANGLE_SIZE * times,
-      style: lay.containerStyle || lay.style,
+      height: lay.trangleSize,
+      style: lay.containerStyle,
       position: lay.position || COMMON.LEFT,
       fill: true
     }
-  }, this)
+  }, this, 'trangle')
   Rect.drawRect({
-    data: {
+    props: {
       point: contentPoint,
+      radius: lay.radius || 4,
       width: contentWidth,
       height: contentHeight,
       position: Rect.CENTER,
-      style: lay.containerStyle || lay.style,
+      style: lay.containerStyle,
       fill: true
     }
-  }, this)
-  Text.drawText({
-    data: {
-      text: lay.text,
-      point: contentPoint,
-      position: Text.CENTER,
-      style: lay.textStyle || lay.style
+  }, this, 'rect')
+  for (let i = 0; i < lay.text.length; i++) {
+    let x = contentPoint.x
+    let y = contentPoint.y
+    if (lay.textPosition === tooltipComp.TEXT.LEFT) {
+      x = x - widthest / 2
+    } else if (lay.textPosition === tooltipComp.TEXT.RIGHT) {
+      x = x + widthest / 2
     }
-  }, this)
+    y = y - (((lay.text.length - 1) / 2 - i) * (parseInt(lay.textStyle.font) + lay.linebetween))
+    Text.drawText({
+      props: {
+        text: lay.text[i],
+        point: { x, y },
+        position: lay.textPosition || tooltipComp.TEXT.CENTER,
+        style: lay.textStyle
+      }
+    }, this, 'text' + i)
+  }
 }
 
 export default tooltipComp

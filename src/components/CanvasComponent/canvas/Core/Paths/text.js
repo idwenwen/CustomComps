@@ -2,28 +2,27 @@
  * state: {
  *  point: {x, y}, // 绘制位置
  *  text: String, // 展示内容
- *  breakLine: Number, // 最大行数
+ *
+ *  width: Number, // 可以不传递
+ *  height: Number, // 最大高度               |  breakLine: Number, // 最大行数
+ *
+ *  betweenEachLine: Number, // 两行之间的间距
  *  angle: Number, // 弧度制角度， 旋转角度（0-2PI）
  *  position: ENUM:[] // 通过对象传递的参数内容
- *  width: Number, // 可以不传递
- *  height: Number, // 最大高度
  *  style: Object,
  * }
  */
 
-import { uuidSupport } from '@u'
 import COMMON from './common'
-import { rotate } from '../tools/translate'
 import Layer from '../Basic'
 
 const textComp = {
   drawText(obj, parent, name) {
-    obj.canvas = parent ? parent._$canvas : obj.canvas
+    obj.canvas = parent ? parent.$canvas : obj.canvas
     obj.path = path
-    obj.translate = translate
     if (parent) {
       if (!name) {
-        name = uuidSupport('text')
+        name = Layer.getUUID('text')
       }
       parent.drawLayer(name, obj)
       return name
@@ -34,25 +33,6 @@ const textComp = {
   LEFT: COMMON.LEFT,
   RIGHT: COMMON.RIGHT,
   CENTER: COMMON.CENTER
-}
-
-function translate() {
-  const lay = this
-  const controlPoint = lay._controlPoint
-  const times = lay._times
-  const x = lay.point.x || lay.point[0] || 0
-  const y = lay.point.y || lay.point[1] || 0
-  const cx = controlPoint.x || controlPoint[0] || 0
-  const cy = controlPoint.y || controlPoint[1] || 0
-  const bx = (x - cx) * times
-  const by = (y - cy) * times
-  lay.style = lay.style || { font: COMMON.TEXTFONT + 'px ' + COMMON.TEXTFAMILY }
-  lay.width = lay.width ? lay.width * times : 0
-  lay.height = lay.height ? lay.height * times : 0
-  lay.point = { x: cx + bx, y: cy + by }
-  if (lay.style.font) lay.style.font = (lay.style.font.replace(parseInt(lay.style.font) + '', parseInt(lay.style.font) * times + ''))
-  lay._times = 1
-  lay._controlPoint = { x: 0, y: 0 }
 }
 
 function path() {
@@ -71,15 +51,16 @@ function path() {
 
 export function text() {
   const lay = this
+  lay.text = lay.text.toString()
   const ctx = lay.$ctx
   const textInfo = measureText(ctx, lay.text, lay.style)
   const lineWidth = lay.width || Math.ceil(textInfo.width)
   const lineHeight = parseInt(lay.style.font)
   const breakLine = lay.breakLine
     ? (lay.height
-      ? (Math.floor(lay.height / (lineHeight + COMMON.BETWEEN_TEXT_LINE)) > lay.breakLine
+      ? (Math.floor(lay.height / (lineHeight + lay.betweenEachLine)) > lay.breakLine
         ? lay.breakLine
-        : Math.floor(lay.height / (lineHeight + COMMON.BETWEEN_TEXT_LINE)))
+        : Math.floor(lay.height / (lineHeight + lay.betweenEachLine)))
       : lay.breakLine)
     : 1
   const finalLine = (lay.width && Math.ceil(parseInt(textInfo.width) / lay.width) < breakLine)
@@ -107,20 +88,23 @@ export function text() {
   for (const key in lay.style) {
     ctx[key] = lay.style[key]
   }
-  if (lay.angle) rotate(ctx, lay.point, lay.angle)
+  if (lay.angle) Layer.rotate(ctx, lay.point, lay.angle)
   for (let i = 0; i < lines.length; i++) {
-    ctx.fillText(lines[i], x, y + i * lineHeight + COMMON.BETWEEN_TEXT_LINE)
+    ctx.fillText(lines[i], x, y + i * lineHeight + (lines.length > 1 ? lay.betweenEachLine : 0))
   }
   ctx.restore()
 }
 
-export function measureText(ctx, text, style) {
-  let final = null
+export function measureText(ctx, text, style, angle = 0) {
+  const final = {}
   ctx.save()
   for (const key in style) {
     ctx[key] = style[key]
   }
-  final = ctx.measureText(text)
+  const stylus = ctx.measureText(text)
+  final.width = stylus.width
+  final.ylength = Math.cos(angle) !== 0 ? final.width * Math.cos(angle) : 0
+  final.xlength = Math.sin(angle) !== 0 ? final.width * Math.cos(angle) : final.width
   ctx.restore()
   return final
 }

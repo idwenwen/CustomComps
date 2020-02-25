@@ -27,6 +27,23 @@ export default function InitTranslate(Layer) {
     beats.delete(name + '_' + this.$uuid)
   }
 
+  Layer.prototype.deleteAllAboutChain = function() {
+    const lay = this
+    if (beats.size > 0) {
+      for (const item of beats) {
+        if (item[0].match(lay.$uuid)) {
+          beats.delete(item[0])
+          continue
+        }
+      }
+    }
+    if (lay.$children.size > 0) {
+      for (const val of lay.$children) {
+        val[1].deleteAllAboutChain()
+      }
+    }
+  }
+
   Layer.prototype.settingRGBA = function(from, to, setting, costTime, betweenTime) {
     const final = {
       interval: betweenTime || intervalTime,

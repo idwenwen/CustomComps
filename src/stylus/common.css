@@ -1,0 +1,36 @@
+.flex {
+  display: flex;
+}
+.justify-center {
+  justify-content: center;
+}
+.align-center{
+  align-items: center;
+}
+.tiling {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* relative position */
+.left-up {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+.left-bottom {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+}
+.right-up {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.right-bottom {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+}

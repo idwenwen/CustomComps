@@ -2,7 +2,9 @@
  * features: [string]
  * correlations: [[string]]
  * width: Number,
- * point: {x: y}
+ * point: {x: y},
+ * max: Number,
+ * min: Number,
  */
 
 import Layer from '../Core'
@@ -16,17 +18,15 @@ const TEXT_FAMILY = 'Lato'
 const TEXT_COLOR = '#000'
 
 const PRECOLORS = [
-  '#3135A6',
-  '#5B96FB',
-  '#BFEBFF',
-  '#E8F6FF',
-  '#FF81D9',
-  '#EC4B56',
-  '#C70861'
+  '#0EC7A5',
+  '#DEECFC',
+  '#3145A6'
 ]
+
 const START = 1
 const END = -1
 const BETWEEN = 0.25
+const FEATURE_DISTANCE = 0.1
 
 const CorrelationComp = {
   drawCorrelation(obj, parent, name) {
@@ -49,14 +49,31 @@ const CorrelationComp = {
         lay.features = features
       })
     },
-    scale(time, point = { x: 0, y: 0 }) {
+    scale(time, point = { x: 0, y: 0 }, after) {
       const lay = this
+      const trans = lay.$meta.get('$translate') || { x: 0, y: 0 }
+      point = { x: point.x - trans.x, y: point.y - trans.y }
       lay.setCus('scale', () => {
         lay.point = Layer.scaleDistanceForPoint(lay.point, point, time)
         lay.width = Layer.toFixed(lay.width * time)
         lay.textFont = Layer.toFixed(lay.textFont * time)
         lay.eachWidth = Layer.toFixed(lay.eachWidth * time)
+        lay.contentFont = Layer.toFixed(lay.contentFont * time)
+        if (after) {
+          after.call(lay)
+        }
       })
+    },
+    filter(max, min) {
+      const lay = this
+      lay.max = max || lay.max || 1
+      lay.min = min || lay.min || -1
+      for (const item of lay.$children) {
+        if (!item[0].match(/_[xy]_/i)) {
+          const num = parseFloat(item[1].content)
+          item[1].emit('setDisable', (num > lay.max || num < lay.min))
+        }
+      }
     }
   }
 }
@@ -64,6 +81,9 @@ const CorrelationComp = {
 function struct() {
   const lay = this
   lay.textFont = lay.textFont || TEXT_FONT
+  lay.featureDistance = lay.featureDistance || FEATURE_DISTANCE
+  lay.max = lay.max || 1
+  lay.min = lay.min || -1
   lay.drawInstance = lay.drawInstance || new Correlation(lay.features, lay.correlations, lay)
   lay.drawInstance.checkShowing(lay.features)
 }
@@ -76,14 +96,12 @@ class Correlation {
     this.contents = contents
     this.newFeatures = features
     this.lay = lay
-    this.betweenFont = 0.5
-    this.eachWidth = 0
+    this.betweenFont = 0.1
     this.squareList = new Map()
-    this.featurePadding = 1.6
-    this.featureDistance = 4
     this.getInstance()
   }
   getLongestFeatureStyle(textFontSize) {
+    const lay = this.lay
     let longest = ''
     for (const item of this.newFeatures) {
       if (item.length > longest.length) {
@@ -93,45 +111,51 @@ class Correlation {
     const stylus = measureText(this.lay.$ctx, longest, {
       font: textFontSize + 'px ' + TEXT_FAMILY
     }, TEXT_ANGLE)
-    const eachWidth = (this.lay.width - stylus.xlength * this.featurePadding - this.featureDistance) / this.newFeatures.length
+    const eachWidth = (this.lay.width - stylus.xlength - stylus.xlength * lay.featureDistance - textFontSize) / this.newFeatures.length
     const fontSize = getSuitableFont(this.lay.$ctx, this.contents[0][0].toString(), eachWidth, TEXT_FAMILY)
     if (fontSize + this.betweenFont < textFontSize || fontSize - this.betweenFont > textFontSize) {
       const change = (fontSize - textFontSize) / 2
       const finalChange = Math.abs(change) < this.betweenFont ? (change < 0 ? -this.betweenFont : this.betweenFont) : change
       return this.getLongestFeatureStyle(textFontSize + finalChange)
     } else {
-      this.eachWidth = eachWidth
-      this.lay.eachWidth = this.eachWidth
+      this.lay.eachWidth = eachWidth
       this.lay.distance = stylus
       this.lay.textFont = textFontSize
+      this.lay.contentFont = fontSize
       return textFontSize
     }
   }
   getInstance() {
+    const lay = this.lay
     const rever = [...this.features].reverse()
     for (let i = 0; i < rever.length; i++) {
       for (let j = 0; j < this.features.length; j++) {
+        const num = parseFloat(Layer.toFixed(this.contents[i][j], 6))
         const sq = new SquareInfo({
           width: 0,
-          content: Layer.toFixed(this.contents[j][i]),
+          content: num,
           x: this.features[j],
-          y: rever[i]
+          y: rever[i],
+          disable: (num > lay.max || num < lay.min),
+          contentFont: lay.contentFont
         })
         this.squareList.set(this.features[j] + '_' + rever[i], sq)
       }
     }
   }
   checkpos() {
+    const lay = this.lay
     const point = this.lay.point
     const distance = this.lay.distance
     const eachWidth = this.lay.eachWidth
     const x = point.x
     const y = point.y
+    const textFont = lay.textFont
     const rever = [...this.newFeatures].reverse()
     for (let i = 0; i < rever.length; i++) {
       const finalPosY = y + (i + 0.5) * eachWidth
       for (let j = 0; j < this.newFeatures.length; j++) {
-        const finalPosX = x + distance.xlength * this.featurePadding + this.featureDistance + (j + 0.5) * eachWidth
+        const finalPosX = x + distance.xlength + distance.xlength * lay.featureDistance + (j + 0.5) * eachWidth + textFont
         const comp = this.squareList.get(this.newFeatures[j] + '_' + rever[i])
         comp.width = eachWidth
         comp.point = { x: finalPosX, y: finalPosY }
@@ -140,15 +164,17 @@ class Correlation {
     }
   }
   checkTextPos() {
+    const lay = this.lay
     const point = this.lay.point
     const distance = this.lay.distance
     const eachWidth = this.lay.eachWidth
     const x = point.x
     const y = point.y
+    const textFont = this.lay.textFont
     const rever = [...this.newFeatures].reverse()
-    const yForFeaturex = y + this.newFeatures.length * eachWidth + distance.ylength * (this.featurePadding - 1) / 2 + this.featureDistance
+    const yForFeaturex = y + this.newFeatures.length * eachWidth + distance.ylength * lay.featureDistance / 2 + textFont
     for (let i = 0; i < this.newFeatures.length; i++) {
-      const xForFeaturex = x + distance.xlength * this.featurePadding + (i + 0.5) * eachWidth
+      const xForFeaturex = x + distance.xlength + distance.ylength * lay.featureDistance + (i + 0.5) * eachWidth + textFont
       Layer.component.text.drawText({
         props: {
           point: { x: xForFeaturex, y: yForFeaturex },
@@ -162,7 +188,7 @@ class Correlation {
         }
       }, this.lay, '_x_' + this.newFeatures[i])
     }
-    const xForFeatureY = x + (this.featurePadding / 2 + 0.5) * distance.xlength
+    const xForFeatureY = x + distance.xlength * (1 + lay.featureDistance / 2)
     for (let i = 0; i < rever.length; i++) {
       const yForFeatureY = y + (i + 0.5) * eachWidth
       Layer.component.text.drawText({
@@ -180,6 +206,7 @@ class Correlation {
     }
   }
   checkShowing(newFeatures) {
+    const lay = this.lay
     this.newFeatures = newFeatures
     if (!this.lay.eachWidth || newFeatures.length !== this.features.length) {
       this.getLongestFeatureStyle(this.lay.textFont)
@@ -200,7 +227,7 @@ class Correlation {
       const reverOrigin = [...this.features].reverse()
       for (let i = 0; i < reverOrigin.length; i++) {
         for (let j = 0; j < this.features.length; j++) {
-          this.lay.$children.get(this.features[j] + '_' + reverOrigin[i]).emit('showSquare', false)
+          this.lay.$children.get(this.features[j] + '_' + reverOrigin[i]).emit('$hide')
         }
       }
       for (const item1 of this.features) {
@@ -210,7 +237,7 @@ class Correlation {
       const rever = [...newFeatures].reverse()
       for (let i = 0; i < rever.length; i++) {
         for (let j = 0; j < newFeatures.length; j++) {
-          this.lay.$children.get(this.features[j] + '_' + rever[i]).emit('showSquare', true)
+          this.lay.$children.get(this.features[j] + '_' + rever[i]).emit('$showing')
         }
       }
       for (const item2 of newFeatures) {
@@ -218,6 +245,10 @@ class Correlation {
         this.lay.$children.get('_y_' + item2).emit('$showing')
       }
     }
+    const width = lay.distance.xlength * (1 + lay.featureDistance) + this.newFeatures.length * lay.eachWidth
+    const height = lay.distance.ylength * (1 + lay.featureDistance) + this.newFeatures.length * lay.eachWidth
+    const point = lay.point
+    lay.$meta.set('clear', { width, height, point })
   }
 }
 
@@ -228,7 +259,8 @@ class SquareInfo {
     this.content = obj.content || '-'
     this.featureX = obj.x || ''
     this.featureY = obj.y || ''
-    debugger
+    this.disable = !!obj.disable
+    this.contentFont = obj.contentFont
     this.color = obj.color || this.getColorForNum(this.content)
   }
   RangeAxis() {
@@ -251,9 +283,9 @@ class SquareInfo {
     if (num === '-') return '#F8F8FA'
     const range = parseFloat(Math.floor((START - num) / BETWEEN * 100) / 100)
     const eachChange = parseFloat(
-      Math.floor(PRECOLORS.length / this.RangeAxis().length * 100) / 100
+      Math.floor((PRECOLORS.length - 1) / (this.RangeAxis().length - 1) * 100) / 100
     )
-    const poinExchangeToColor = eachChange * range > 6 ? 6 : eachChange * range
+    const poinExchangeToColor = eachChange * range
     const startColor = Layer.toRGBA(
       PRECOLORS[Math.floor(poinExchangeToColor)]
     )
@@ -285,7 +317,9 @@ class SquareInfo {
         color: this.color,
         content: this.content,
         featureX: this.featureX,
-        featureY: this.featureY
+        featureY: this.featureY,
+        disable: this.disable,
+        fontSize: lay.contentFont
       },
       events: square.events
     }, lay, this.featureX + '_' + this.featureY)

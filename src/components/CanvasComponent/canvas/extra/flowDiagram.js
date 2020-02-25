@@ -13,11 +13,9 @@ const LINE_WIDTH_FOR_LINKING = 2
 const COMP_PADDING = 12
 
 const TOPPEST = 20
-const COMP_BETWEEN = 10
-const INNER_BETWEEN = 10
-const LEVEL_BETWEEN = 30
-
-const CLEAR_PADDING = 100
+const COMP_BETWEEN = 15
+const INNER_BETWEEN = 15
+const LEVEL_BETWEEN = 50
 
 const flowDiagram = {
   drawDiagram(obj, parent, name) {
@@ -33,11 +31,16 @@ const flowDiagram = {
       return new Layer(obj)
     }
   },
-  clear,
+  SUCCESS: Progress.type.SUCCESS,
+  FAIL: Progress.type.FAIL,
+  RUNNING: Progress.type.RUNNING,
+  UNRUN: Progress.type.UNRUN,
   explaination: DiagramInfo,
   events: {
-    scale(time, point = { x: 0, y: 0 }) {
+    scale(time, point = { x: 0, y: 0 }, after) {
       const lay = this
+      const trans = lay.$meta.get('$translate') || { x: 0, y: 0 }
+      point = { x: point.x - trans.x, y: point.y - trans.y }
       lay.setCus('scale', () => {
         lay.toppest = Layer.scaleDistanceForPoint(lay.toppest, point, time)
         lay.padding = Layer.toFixed(lay.padding * time)
@@ -46,6 +49,9 @@ const flowDiagram = {
         lay.componentBetween = Layer.toFixed(lay.componentBetween * time)
         lay.innerBetween = Layer.toFixed(lay.innerBetween * time)
         lay.levelBetween = Layer.toFixed(lay.levelBetween * time)
+        if (after) {
+          after.call(lay)
+        }
       })
     },
     toSuccess(name, img) {
@@ -77,12 +83,6 @@ const flowDiagram = {
   }
 }
 
-function clear() {
-  const lay = this
-  const clear = lay.$meta.get('clear') || { point: { x: 0, y: 0 }, width: lay.$canvas.width, height: lay.$canvas.height }
-  lay.$ctx.clearRect(clear.point.x, clear.point.y, clear.width, clear.height)
-}
-
 function struct() {
   const lay = this
   const dagInfo = lay.dagInfo
@@ -90,11 +90,12 @@ function struct() {
   lay.padding = lay.padding || COMP_PADDING
   lay.fontSizeForContent = lay.fontSizeForContent || FONT_SIZE
   lay.toppest = lay.toppest || { x: lay.$canvas.width / 2, y: TOPPEST }
-  lay.componentBetween = lay.componentBetween || COMP_BETWEEN
-  lay.innerBetween = lay.innerBetween || INNER_BETWEEN
-  lay.levelBetween = lay.levelBetween || LEVEL_BETWEEN
+  lay.componentBetween = (lay.componentBetween || COMP_BETWEEN)
+  lay.innerBetween = (lay.innerBetween || INNER_BETWEEN)
+  lay.levelBetween = (lay.levelBetween || LEVEL_BETWEEN)
   const info = new DiagramInfo(lay, dagInfo)
   lay.$meta.set('clear', info.getStyleOfDag())
+  lay._inited = true
 }
 
 export default flowDiagram
@@ -135,13 +136,13 @@ class DiagramInfo {
   componentLink(obj) {
     for (const name in obj) {
       for (const item of obj[name]) {
-        this.linking[item.type] = this.linking[item.type] || []
-        this.linking[item.type].push([item.component_name, name])
         const parent = this.components.get(item.component_name)
         const child = this.components.get(name)
-        if (child.level < parent.level + 1) {
+        if (child.level <= parent.level) {
           child.level = parent.level + 1
         }
+        this.linking[item.type] = this.linking[item.type] || []
+        this.linking[item.type].push([item.component_name, name])
       }
     }
     for (const val of this.components) {
@@ -169,9 +170,11 @@ class DiagramInfo {
   }
   checkPos() {
     const lay = this.lay
-    const style = this.getStyleOfDag()
-    if (style.height < (lay.$canvas.height - lay.toppest.y * 2)) {
-      lay.toppest.y = (lay.$canvas.height - style.height) / 2
+    if (!lay._inited) {
+      const style = this.getStyleOfDag()
+      if (style.height < (lay.$canvas.height - lay.toppest.y * 2)) {
+        lay.toppest.y = (lay.$canvas.height - style.height) / 2
+      }
     }
     let top = this.lay.toppest.y
     const width = this.compWidth
@@ -198,9 +201,12 @@ class DiagramInfo {
     for (const key in this.linking) {
       this.linkPos[key] = this.linkPos[key] || []
       for (const val of this.linking[key]) {
-        const link = []
-        link.push(this.lay.$children.get(val[0]).$meta.get('port').get(key + 'Output'))
-        link.push(this.lay.$children.get(val[1]).$meta.get('port').get(key + 'Input'))
+        const link = { line: [] }
+        link.line.push(this.lay.$children.get(val[0]).$meta.get('port').get(key + 'Output'))
+        link.line.push(this.lay.$children.get(val[1]).$meta.get('port').get(key + 'Input'))
+        const p = this.components.get(val[0])
+        const c = this.components.get(val[1])
+        link.corssLevel = ((c.level - p.level) >= 2)
         this.linkPos[key].push(link)
       }
     }
@@ -208,7 +214,11 @@ class DiagramInfo {
   getLinkInstance() {
     for (const key in this.linkPos) {
       for (const val of this.linkPos[key]) {
-        const points = calculation(val[0], val[1], Math.abs(val[0].y - val[1].y))
+        const distance = this.lay.levelBetween
+        const horizon = val.corssLevel
+          ? (key.match('data') ? -this.compWidth / 3 : this.compWidth / 3)
+          : false
+        const points = calculation(val.line[0], val.line[1], horizon, distance)
         Layer.component.line.drawLine({
           props: {
             point: points,
@@ -227,24 +237,22 @@ class DiagramInfo {
     let longest = 0
     let dagWidth = 0
     let dagHeight = 0
-    let startX = this.lay.toppest.x
-    const startY = this.lay.toppest.y
     for (const item of this.level) {
       if (item.length > longest) {
         longest = item.length
       }
       dagHeight += item.length * this.compHeight + (item.length - 1) * this.lay.innerBetween + this.lay.levelBetween
     }
-    dagWidth = ((longest + 1) * this.compWidth) + (longest - 1) * this.lay.componentBetween
-    startX -= dagWidth / 2
-    return { point: { x: startX - CLEAR_PADDING / 2, y: startY - CLEAR_PADDING / 2 }, width: dagWidth + CLEAR_PADDING, height: dagHeight + CLEAR_PADDING }
+    dagHeight -= this.lay.levelBetween
+    dagWidth = (longest * this.compWidth) + (longest - 1) * this.lay.componentBetween
+    return { width: dagWidth, height: dagHeight }
   }
 }
 
 class CompExpression {
   constructor(obj) {
     this.name = obj.component_name
-    this.time = this.exchangeTime(obj.time)
+    this.time = obj.time
     this.type = this.getStatus(obj.status || 'unrun')
     this.level = 0
     this.width = 0
@@ -262,20 +270,6 @@ class CompExpression {
       return Progress.type.UNRUN
     }
   }
-  exchangeTime(time) {
-    if (!time) {
-      return '00:00:00'
-    }
-    const t = Math.round(time / 1000)
-    let s = t % 60
-    const tm = (t - s) / 60
-    let m = tm % 60
-    let h = (tm - m) / 60
-    s = s < 10 ? '0' + s : s
-    m = m < 10 ? '0' + m : m
-    h = h < 10 ? '0' + h : h
-    return h + ':' + m + ':' + s
-  }
   setDisable(disable) {
     this.disable = disable
   }
@@ -289,11 +283,11 @@ class CompExpression {
   setPort() {
     this.dataInput = true
     this.dataOutput = true
-    this.moduleInput = true
-    this.moduleOutput = true
+    this.modelInput = true
+    this.modelOutput = true
     if (this.belone.toLowerCase().match(/(intersection|federatedsample|evaluation|upload|download|rsa)/i)) {
-      this.moduleInput = false
-      this.moduleOutput = false
+      this.modelInput = false
+      this.modelOutput = false
     }
     if (this.belone.toLowerCase().match(/(evaluation|upload|download)/i)) {
       this.dataOutput = false
@@ -313,8 +307,8 @@ class CompExpression {
         disable: this.disable,
         dataInput: this.dataInput,
         dataOutput: this.dataOutput,
-        moduleInput: this.moduleInput,
-        moduleOutput: this.moduleOutput,
+        modelInput: this.modelInput,
+        modelOutput: this.modelOutput,
         contentFontSize: lay.fontSizeForContent,
         time: lay.$children.get(this.name) ? lay.$children.get(this.name).time : this.time
       },

@@ -50,7 +50,9 @@ const PORT_BETWEEN = 2
 const TOOLTIP_FONT = 12
 const TRANGLE_SIZE = 5
 const TOOLTIP_PADDING = 6
-const TOOLTIP_BACKGROUND = 'rgba(255,165,0,0.8)'
+const TOOLTIP_RADIUS = 4
+const TOOLTIP_BACKGROUND = 'rgba(127,125,142,0.7)'
+const TOOLTIP_FONT_STYLE = 'rgba(255,255,255,1)'
 const DATA_PORT_COLOR = '#E6B258'
 const MODEL_PORT_COLOR = '#00cbff'
 const DISABLE_INIT_COLOR = '#7F7D8E'
@@ -94,6 +96,7 @@ const progressComp = {
     },
     scale(time, point = { x: 0, y: 0 }) {
       const lay = this
+      lay._scale = (!lay._scale ? 1 : lay._scale) * time
       lay.setCus('scale', () => {
         lay.point = Layer.scaleDistanceForPoint(lay.point, point, time)
         if (lay.width) lay.width = Layer.toFixed(lay.width * time)
@@ -108,9 +111,14 @@ const progressComp = {
         lay.portRadius = Layer.toFixed(lay.portRadius * time)
         lay.betweenPortWidthTooltip = Layer.toFixed(lay.betweenPortWidthTooltip * time)
         lay.tooltipFont = Layer.toFixed(lay.tooltipFont * time)
+        if (lay.tooltipFont < TOOLTIP_FONT || lay._scale < 1) lay.tooltipFont = TOOLTIP_FONT
         lay.tipTrangleSize = Layer.toFixed(lay.tipTrangleSize * time)
+        if (lay.tipTrangleSize < TRANGLE_SIZE || lay._scale < 1) lay.tipTrangleSize = TRANGLE_SIZE
         lay.radius = Layer.toFixed(lay.radius * time)
         lay.tooltipPadding = Layer.toFixed(lay.tooltipPadding * time)
+        if (lay.tooltipPadding < TOOLTIP_PADDING || lay._scale < 1) lay.tooltipPadding = TOOLTIP_PADDING
+        lay.tooltipRadius = Layer.toFixed(lay.tooltipRadius * time)
+        if (lay.tooltipRadius < TOOLTIP_RADIUS || lay._scale < 1) lay.tooltipRadius = TOOLTIP_RADIUS
       })
     },
     showTips(point) {
@@ -141,6 +149,9 @@ const progressComp = {
     tictok() {
       const lay = this
       lay.registerChainTranslate('tictok', true, lay.settingCus(() => {
+        if (!lay.time.match(':')) {
+          lay.time = exchangeTime(lay.time)
+        }
         const time = lay.time.split(':')
         let hou = parseInt(time[0])
         let min = parseInt(time[1])
@@ -291,6 +302,7 @@ function struct() {
   lay.choose = !!lay.choose
   lay.contentFontSize = lay.contentFontSize || FONT_SIZE
   lay.padding = lay.padding || COMP_PADDING
+  lay.tooltipRadius = lay.tooltipRadius || TOOLTIP_RADIUS
   lay.iconPadding = lay.iconPadding || ICON_PADDING
   lay.betweenIconWithContent = lay.betweenIconWithContent || BETWEEN_ICON_WITH_CONTENT
   lay.lineWidth = lay.lineWidth || LINEWIDTH
@@ -303,14 +315,13 @@ function struct() {
   lay.radius = lay.radius || RECT_RADIUS
   lay.tooltipPadding = lay.tooltipPadding || TOOLTIP_PADDING
   if (lay.type === progressComp.type.RUNNING) {
-    lay.time = lay.time || '00:00:00'
+    lay.time = exchangeTime(lay.time) || '00:00:00'
   }
 
-  const dataInput = !(lay.dataInput === false)
-  const dataOutput = !(lay.dataOutput === false)
-  const modelInput = !(lay.modelInput === false)
-  const modelOutput = !(lay.modelOutput === false)
-
+  const dataInput = !!lay.dataInput
+  const dataOutput = !!lay.dataOutput
+  const modelInput = !!lay.modelInput
+  const modelOutput = !!lay.modelOutput
   const x = lay.point.x || lay.point[0] || 0
   const y = lay.point.y || lay.point[1] || 0
   const drawingStyle = getStyle(lay.type, lay.choose, lay.disable, lay)
@@ -411,13 +422,14 @@ function struct() {
         position: Layer.component.tooltip.BOTTOM,
         text: 'Data Input',
         trangleSize: lay.tipTrangleSize,
-        radius: lay.radius,
+        radius: lay.tooltipRadius,
         padding: lay.tooltipPadding,
         containerStyle: {
-          fillStyle: 'rgba(255,165,0,0.8)'
+          fillStyle: TOOLTIP_BACKGROUND
         },
         textStyle: {
-          font: lay.tooltipFont + 'px ' + FONT_FAMILY
+          font: lay.tooltipFont + 'px ' + FONT_FAMILY,
+          fillStyle: TOOLTIP_FONT_STYLE
         }
       },
       zindex: 1,
@@ -451,13 +463,14 @@ function struct() {
         position: Layer.component.tooltip.UP,
         text: 'Data Output',
         trangleSize: lay.tipTrangleSize,
-        radius: lay.radius,
+        radius: lay.tooltipRadius,
         padding: lay.tooltipPadding,
         containerStyle: {
           fillStyle: TOOLTIP_BACKGROUND
         },
         textStyle: {
-          font: lay.tooltipFont + 'px ' + FONT_FAMILY
+          font: lay.tooltipFont + 'px ' + FONT_FAMILY,
+          fillStyle: TOOLTIP_FONT_STYLE
         }
       },
       zindex: 1,
@@ -491,13 +504,14 @@ function struct() {
         position: Layer.component.tooltip.BOTTOM,
         text: 'Model Input',
         trangleSize: lay.tipTrangleSize,
-        radius: lay.radius,
+        radius: lay.tooltipRadius,
         padding: lay.tooltipPadding,
         containerStyle: {
           fillStyle: TOOLTIP_BACKGROUND
         },
         textStyle: {
-          font: lay.tooltipFont + 'px ' + FONT_FAMILY
+          font: lay.tooltipFont + 'px ' + FONT_FAMILY,
+          fillStyle: TOOLTIP_FONT_STYLE
         }
       },
       zindex: 1,
@@ -531,13 +545,14 @@ function struct() {
         position: Layer.component.tooltip.UP,
         text: 'Model Output',
         trangleSize: lay.tipTrangleSize,
-        radius: lay.radius,
+        radius: lay.tooltipRadius,
         padding: lay.tooltipPadding,
         containerStyle: {
           fillStyle: TOOLTIP_BACKGROUND
         },
         textStyle: {
-          font: lay.tooltipFont + 'px ' + FONT_FAMILY
+          font: lay.tooltipFont + 'px ' + FONT_FAMILY,
+          fillStyle: TOOLTIP_FONT_STYLE
         }
       },
       zindex: 1,
@@ -550,6 +565,24 @@ function struct() {
 function clear() {
   const lay = this
   lay.$ctx.clearRect(0, 0, lay.$canvas.width, lay.$canvas.height)
+}
+
+export function exchangeTime(time) {
+  if (time.toString().match(':')) {
+    return time
+  }
+  if (!time) {
+    return '00:00:00'
+  }
+  const t = Math.round(time / 1000)
+  let s = t % 60
+  const tm = (t - s) / 60
+  let m = tm % 60
+  let h = (tm - m) / 60
+  s = s < 10 ? '0' + s : s
+  m = m < 10 ? '0' + m : m
+  h = h < 10 ? '0' + h : h
+  return h + ':' + m + ':' + s
 }
 
 export default progressComp

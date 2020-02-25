@@ -3,23 +3,27 @@ export default function InitEvents(Layer) {
     const lay = this
     lay.$events = events || {}
     lay.$events.$showing = function() {
-      lay.$visiable = true
-      if (lay.$children.size > 0) {
-        for (const val of lay.$children) {
+      const layer = this
+      layer.$visiable = true
+      if (layer.$children.size > 0) {
+        for (const val of layer.$children) {
           val[1].emit('$showing')
         }
       }
     }
     lay.$events.$hide = function() {
-      lay.$visiable = false
-      if (lay.$children.size > 0) {
-        for (const val of lay.$children) {
+      const layer = this
+      layer.$visiable = false
+      if (layer.$children.size > 0) {
+        for (const val of layer.$children) {
           val[1].emit('$hide')
         }
       }
     }
     lay.$events.$translate = function(x, y) {
-      lay.$meta.set('$translate', { x: x || 0, y: y || 0 })
+      const layer = this
+      if (!layer.$meta) layer.$meta = new Map()
+      layer.$meta.set('$translate', { x: x || 0, y: y || 0 })
     }
   }
 

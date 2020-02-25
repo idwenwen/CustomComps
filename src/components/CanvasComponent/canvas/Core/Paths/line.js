@@ -79,15 +79,48 @@ export function curve() {
   })
 }
 
-export function calculation(startP, endP, distance) {
+export function calculation(startP, endP, horizen, levelBetween, max, min) {
   const finalPoints = []
+  let deviate = max || levelBetween || 0
+  if (!levelBetween || (max && min)) {
+    max = max || 50
+    min = min || 20
+    if (max <= min) {
+      const middle = max
+      max = min
+      min = middle
+    }
+    deviate = Math.random() * (max - min) + min
+  }
+  const distanceRate = 0.4
+  const betweenPoints = endP.y - startP.y
+  levelBetween = levelBetween || betweenPoints / 2
+  if ((betweenPoints / 2) < levelBetween) {
+    levelBetween = betweenPoints / 2
+  }
   finalPoints.push(startP)
-  const sx = startP.x || startP[0] || 0
-  const sy = startP.y || startP[1] || 0
-  const ex = endP.x || endP[0] || 0
-  const ey = endP.y || endP[1] || 0
-  finalPoints.push({ x: sx, y: ey > sy ? sy + 0.25 * distance : sy - 0.25 * distance })
-  finalPoints.push({ x: ex, y: ey > sy ? ey - 0.25 * distance : ey + 0.25 * distance })
+  if (horizen || (startP.x !== endP.x && startP.y !== endP.y)) {
+    const sx = startP.x || startP[0] || 0
+    const sy = startP.y || startP[1] || 0
+    const ex = endP.x || endP[0] || 0
+    const ey = endP.y || endP[1] || 0
+    const distance = levelBetween
+    const ps = { x: sx, y: ey > sy ? sy + distanceRate * distance : sy - distanceRate * distance }
+    const pe = { x: ex, y: ey > sy ? ey - distanceRate * distance : ey + distanceRate * distance }
+    finalPoints.push(ps)
+    if (horizen && sx === ex) {
+      if (horizen === 'left') {
+        horizen = -deviate
+      } else if (horizen === 'right') {
+        horizen = deviate
+      }
+      const pm1 = { x: sx + horizen, y: ey > sy ? sy + distanceRate * distance * 2 : sy - distanceRate * distance * 2 }
+      finalPoints.push(pm1)
+      const pm2 = { x: sx + horizen, y: ey > sy ? ey - distanceRate * distance * 2 : ey + distanceRate * distance * 2 }
+      finalPoints.push(pm2)
+    }
+    finalPoints.push(pe)
+  }
   finalPoints.push(endP)
   return finalPoints
 }
